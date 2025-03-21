@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.XR.Hands;
 using UnityEngine.XR.Management;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using TMPro;
 using Unity.XR.CoreUtils;
 
-[System.Serializable]
+//[System.Serializable]
 public struct Gesture
 {
     public string name;
@@ -19,34 +20,25 @@ public class PlankDetector : MonoBehaviour
 {
     // Provides access to the hand tracking system
     public TextMeshProUGUI gestureText;
+    public TextMeshProUGUI instructionText;
+    public Transform headset;
 
     public float threshold = 0.1f;
+    public float minHeight, maxHeight;
+    public bool isPlanking = false;
+    private bool calibrationComplete = false;
+
     public XRHandSubsystem handSubsystem;
     public List<Gesture> gestures;
-    public bool debugMode = true;
-    private Gesture previousGesture;
+    private Gesture previousLeftGesture, previousRightGesture;
+    private string leftHandGesture = "None", rightHandGesture = "None";
 
-
-    private Gesture previousLeftGesture;
-    private Gesture previousRightGesture;
-
-    private string leftHandGesture = "None";
-    private string rightHandGesture = "None";
-
-    //Height Calibration Variables
-
-    private float minHeight;
-    private float maxHeight;
-    public float heightTolerance = 0.2f;
-
-    private bool isPlanking = false;
 
 
     private void Start()
     {
         //Get the active XR hand tracking subsystem
         handSubsystem = XRGeneralSettings.Instance.Manager.activeLoader.GetLoadedSubsystem<XRHandSubsystem>();
-
         previousLeftGesture = new Gesture();
         previousRightGesture = new Gesture();  
         // previousGesture = new Gesture();
@@ -72,22 +64,55 @@ public class PlankDetector : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.R))
         {
             SaveGesture(handSubsystem.rightHand, rightHandGesture, "Right Hand");
-            Debug.Log("Saving RIGHT HAND Gestyre...");
+            Debug.Log("Saving RIGHT HAND Gesture...");
         }
 
-        Gesture currentGesture = Recognise();
-        bool hasRecognised = !currentGesture.Equals(new Gesture());
+        Gesture currentLeftGesture = Recognise(handSubsystem.leftHand, leftHandGesture);
+        Gesture currentRightGesture = Recognise(rightHandGesture, rightHandGesture);
 
-        if (hasRecognised && currentGesture.Equals(previousGesture))
+        leftHandGesture = currentLeftGesture.name;
+        rightHandGesture = currentRightGesture.name;
+
+        //Gesture currentGesture = Recognise();
+
+        bool leftRecognised = !currentLeftGesture.Equals(new Gesture());
+        bool rightRecognised = !currentRightGesture.Equals(new Gesture());
+
+
+        //bool hasRecognised = !currentGesture.Equals(new Gesture());
+
+        if (leftRecognised && currentLeftGesture.Equals(previousLeftGesture))
         {
-            Debug.Log("New Gesture Found: " + currentGesture.name);
-            previousGesture = currentGesture;
-            currentGesture.onRecognised.Invoke();
+            previousLeftGesture = currentLeftGesture;
+            currentLeftGesture.onRecognised.Invoke();
         }
+
+        if (rightRecognised && currentRightGesture.Equals(previousRightGesture))
+        {
+            previousRightGesture = currentRightGesture;
+            currentRightGesture.onRecognised.Invoke();
+        }
+
+        if (!isCalibrating && !calibrationComplete && leftHandGesture == "Thumbs Up" && rightHandGesture == "Thumbs Up")
+        {
+            StartCoroutine(StartCalibration());
+        }
+
+        if (calibrationComplete)
+        {
+            CheckPlankBreak();
+        }
+
+        //if (hasRecognised && currentGesture.Equals(previousGesture))
+        //{
+        //    Debug.Log("New Gesture Found: " + currentGesture.name);
+        //    previousGesture = currentGesture;
+        //    currentGesture.onRecognised.Invoke();
+        //}
 
         if (gestureText != null)
         {
-            gestureText.text = "Gesture: " + currentGesture.name;
+            gestureText.text = "Left Gesture: " + currentLeftGesture.name + " | Right Gesture " + currentRightGesture.name;
         }
 
         else
@@ -99,35 +124,47 @@ public class PlankDetector : MonoBehaviour
         }
     }
 
+    private IEnumerator StartCalibration()
+    {
+        
+        isCalibrating = true;
+        instructionText.text = "Get ready for calibration... put your knees down if needed.";
+        yield return new WaitForSeconds(3);
+
+        instructionText.text = "Look down for 5 seconds...";
+        yield return new WaitForSeconds(5);
+        minHeight = Camera.main.transform.position.y;
+
+        instructionText.text = "Look up for 5 seconds...";
+        yield return new WaitForSeconds(5);
+        maxHeight = Camera.main.transform.position.y;
+
+        calibrationComplete = true;
+        instructionText.text = "Calibration complete! Get into plank position.";
+        
+    }
+
     void SaveGesture()
     {
-        Gesture g = new Gesture();
-        g.name = "New Gesture";
-        List<Vector3> data = new List<Vector3>();
 
-        XRHand leftHand = handSubsystem.leftHand;
-        XRHand rightHand = handSubsystem.rightHand;
-
-        if (leftHand.isTracked)
+        if (hand == null || !hand.isTracked)
         {
-            Debug.Log("Left hand detected. Saving...");
-            SaveHandData(leftHand, data);
-        }
-        else if (rightHand.isTracked)
-        {
-            Debug.Log("Right hand detected. Saving...");
-            SaveHandData(rightHand, data);
-        }
-
-        if (!leftHand.isTracked && !rightHand.isTracked)
-        {
-            Debug.LogError("No hand detected when trying to save!");
+            Debug.LogError($"{handName} not detected! Cannot save gesture.");
             return;
         }
 
+        Gesture g = new Gesture();
+        g.name = handName + "Gesture" + (gestureList.Count + 1);
+        List<Vector3> data = new List<Vector3>();
+
+        SaveHandData(hand, data);
+
+        //XRHand leftHand = handSubsystem.leftHand;
+        //XRHand rightHand = handSubsystem.rightHand;
+
         g.fingerData = data;
         gestures.Add(g);
-        Debug.Log("Gesture saved successfully! Recorded " + g.fingerData.Count + " joint positions.");
+        Debug.Log($"{handName} saved successfully! Recorded {g.fingerData.Count} joint positions.");
     }
 
     private void SaveHandData(XRHand hand, List<Vector3> data)
@@ -137,6 +174,7 @@ public class PlankDetector : MonoBehaviour
         if (!wristJoint.TryGetPose(out Pose wristPose))
         {
             Debug.LogError("Failed to get wrist pose.");
+            return;
         }
 
         foreach (XRHandJointID jointID in new XRHandJointID[]
@@ -152,7 +190,6 @@ public class PlankDetector : MonoBehaviour
             {
                 Vector3 relativePosition = pose.position - wristPose.position;
                 data.Add(relativePosition);
-                Debug.Log($"Saved {jointID} relative to wrist: {relativePosition}");
             }
         }
     }
@@ -163,10 +200,10 @@ public class PlankDetector : MonoBehaviour
         float currentMin = Mathf.Infinity;
 
 
-        XRHand leftHand = handSubsystem.leftHand;
-        XRHand rightHand = handSubsystem.rightHand;
+        //XRHand leftHand = handSubsystem.leftHand;
+        //XRHand rightHand = handSubsystem.rightHand;
 
-        XRHand hand = leftHand.isTracked ? leftHand : rightHand;
+        //XRHand hand = leftHand.isTracked ? leftHand : rightHand;
 
         if (hand == null || !hand.isTracked)
         {
@@ -183,7 +220,7 @@ public class PlankDetector : MonoBehaviour
             return currentGesture;
         }
 
-        foreach (var gesture in gestures)
+        foreach (var gesture in gestureList)
         {
             if (gesture.fingerData.Count != 9)
             {
@@ -204,8 +241,8 @@ public class PlankDetector : MonoBehaviour
                     XRHandJointID.RingIntermediate, XRHandJointID.LittleIntermediate
                 };
 
-                XRHandJointID jointID = trackedJoints[i];
-                XRHandJoint joint = hand.GetJoint(jointID);
+                //XRHandJointID jointID = trackedJoints[i];
+                XRHandJoint joint = hand.GetJoint(trackedJoints[i]);
 
                 if (!joint.TryGetPose(out Pose fingerPose))
                 {
@@ -213,23 +250,23 @@ public class PlankDetector : MonoBehaviour
                     isDiscarded = true;
                     break;
                 }
+
                 //float distance = Vector3.Distance(currentData, gesture.fingerDatas[i]);
-                if (joint.TryGetPose(out Pose pose))
+
+                Vector3 relativePosition = pose.position - wristPose.position;
+                float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
+
+                //Debug.Log($"Comparing {jointID} - Distance: {distance}");  // Debug log for gesture comparison
+
+
+                if (distance > threshold)
                 {
-                    Vector3 relativePosition = pose.position - wristPose.position;
-                    float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
-
-                    Debug.Log($"Comparing {jointID} - Distance: {distance}");  // Debug log for gesture comparison
-
-
-                    if (distance > threshold)
-                    {
-                        isDiscarded = true;
-                        break;
-                    }
-
-                    sumDistance += distance;
+                    isDiscarded = true;
+                    break;
                 }
+
+                sumDistance += distance;
+                
             }
 
             if (!isDiscarded && sumDistance < currentMin)
@@ -239,5 +276,45 @@ public class PlankDetector : MonoBehaviour
             }
         }
         return currentGesture;
+    }
+
+
+    public void StartPlank()
+    {
+        minHeight = Camera.main.transform.position.y;
+        maxHeight = minHeight;
+        isPlanking = true;
+        Debug.Log("Plank started! Calibrating height range...");
+    }
+
+    public void SetMinHeight()
+    {
+        minHeight = Camera.main.transform.position.y;
+        Debug.Log($"Min Height Set: {minHeight}"); 
+    }
+
+    public void SetMaxHeight()
+    {
+        maxHeight = Camera.main.transform.position.y;
+        Debug.Log($"Max Height Set : {maxHeight}");
+    }
+
+    private void CheckPlankBreak()
+    {
+        if (!isPlanking)
+        {
+            Debug.LogError("No Plank Detected");
+            return;
+        }
+
+        float headsetHeight = Camera.main.transform.position.y;
+        bool heightBroken = headsetHeight > maxHeight + heightTolerance || headsetHeight < minHeight - heightTolerance;
+        bool handsOpen = leftHandGesture == "Open" && rightHandGesture == "Open";
+
+        if (heightBroken && handsOpen)
+        {
+            Debug.Log("Plank broken! Height and hand gestures detected a break.");
+            isPlanking = false;
+        }
     }
 }
