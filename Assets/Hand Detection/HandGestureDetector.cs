@@ -60,14 +60,14 @@ public class HandGestureDetector : MonoBehaviour
             currentGesture.onRecognised.Invoke();
         }
 
-        if(gestureText != null)
+        if (gestureText != null)
         {
             gestureText.text = "Gesture: " + currentGesture.name;
         }
 
         else
         {
-            if(gestureText != null)
+            if (gestureText != null)
             {
                 gestureText.text = "Gesture: None";
             }
@@ -112,6 +112,7 @@ public class HandGestureDetector : MonoBehaviour
         if (!wristJoint.TryGetPose(out Pose wristPose))
         {
             Debug.LogError("Failed to get wrist pose.");
+            return;
         }
 
         foreach (XRHandJointID jointID in new XRHandJointID[]
