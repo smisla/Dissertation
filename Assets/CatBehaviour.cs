@@ -7,6 +7,8 @@ public class CatBehaviour : MonoBehaviour
     public enum Personality { Confident, Timid, Playful, Lazy, Mischievous, Social }
     public Personality personality;
 
+    
+
     private Animator animator;
     private Vector3 startPos;
     private Vector3 middlePos;
@@ -38,12 +40,19 @@ public class CatBehaviour : MonoBehaviour
 
     void Start()
     {
+       
         animator = GetComponent<Animator>();
         animator.SetBool("isWalking", true);
 
-        startPoint = startPointObj.transform;
-        middlePoint = middlePointObj.transform;
-        endPoint = endPointObj.transform;
+        speed = Random.Range(0.5f, 3.0f);
+
+        animator.SetFloat("WalkSpeed", speed);
+
+        AssignPersonality();
+
+        //startPoint = startPointObj.transform;
+        //middlePoint = middlePointObj.transform;
+        //endPoint = endPointObj.transform;
 
         transform.position = startPoint.position;
         targetPosition = middlePoint.position;
@@ -53,45 +62,61 @@ public class CatBehaviour : MonoBehaviour
 
     void Update()
     {
+        float targetSpeed = speed;
+        float smoothTime = 0.5f;
+
+        float currentWalkSpeed = animator.GetFloat("WalkSpeed");
+        float smoothedWalkSpeed = Mathf.Lerp(currentWalkSpeed, targetSpeed, Time.deltaTime / smoothTime);
+
+        animator.SetFloat("WalkSpeed", smoothedWalkSpeed);
+
+        float baseSpeed = 1.0f;
+        float maxSpeedMultiplier = 1.3f;
+        float animationSpeed = baseSpeed + ((smoothedWalkSpeed - 0.5f) / 4.0f);
+        animationSpeed = Mathf.Clamp(animationSpeed, 0.85f, maxSpeedMultiplier);
+
+        animator.speed = animationSpeed;
+        //animator.SetFloat("WalkSpeed", speed);
+        //animator.Update(Time.deltaTime);
+
+        //float animationSpeed = Mathf.Lerp(0.9f, 1.2f, (speed - 0.5f) / 2.5f);
+        //animationSpeed = Mathf.Clamp(animationSpeed, 0.9f, 1.2f);
+        //animator.speed = animationSpeed;
+
+        if (!animator.GetBool("isWalking")) return;
+
         if (animator.GetBool("isWalking"))
         {
+            float sway = Mathf.Sin(Time.time * 3f) * 0.15f;
+            transform.position += transform.right * sway * Time.deltaTime;
+
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
         }
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
-            if (!reachedMiddle)
+            if (targetPosition == middlePoint.position && !reachedMiddle)
             {
                 reachedMiddle = true;
-                if (!hasPausedOnBack && Random.value < pauseChance)
+
+                if (Random.value < pauseChance)
                 {
                     PauseOnBack();
-                }
-                else if (!hasDoneAction && Random.value < actionChance)
-                {
-                    DoAction();
                 }
                 else
                 {
                     ResumeMovement();
                 }
-                targetPosition = endPoint.position;
-                return;
             }
-            else
+            else if (targetPosition == endPoint.position)
             {
-                Destroy(gameObject);
+                StopAtEnd();
             }
         }
-
-        //if (animator.GetBool("isWalking"))
-        //{
-        //    transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-        //}
-        //if (isMoving)
-        //{
-        //    MoveCat();
-        //}
+        if (!hasPausedOnBack && Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            
+        }
     }
 
     public void SetTargetPositions(Transform start, Transform middle, Transform end)
@@ -106,6 +131,9 @@ public class CatBehaviour : MonoBehaviour
     {
         hasPausedOnBack = true;
         animator.SetBool("isWalking", false);
+        animator.SetBool("isRunning", false);
+        animator.SetBool("isCrouchMove", false);
+
         animator.SetBool("isPaused", true);
 
         StartCoroutine(ResumeAfterDelay(2f));
@@ -123,7 +151,36 @@ public class CatBehaviour : MonoBehaviour
     {
         personality = (Personality)Random.Range(0, System.Enum.GetValues(typeof(Personality)).Length);
         animator.SetBool("isWalking", true);
+
+        switch (personality)
+        {
+            case Personality.Confident:
+                speed = Random.Range(1.1f, 2.0f); // Fast walk
+                animator.SetTrigger("Run");
+                break;
+            case Personality.Timid:
+                speed = Random.Range(0.5f, 0.9f); // Slow cautious walk
+                //animator.SetTrigger("CrouchMove");
+                break;
+            case Personality.Playful:
+                speed = Random.Range(1.8f, 2.8f);
+                animator.SetTrigger("Jump");
+                break;
+            case Personality.Lazy:
+                speed = Random.Range(1f, 1.5f); // Very slow
+                animator.SetTrigger("LieDown");
+                break;
+            case Personality.Mischievous:
+                speed = Random.Range(2f, 3f);
+                animator.SetTrigger("Crouch");
+                break;
+            case Personality.Social:
+                speed = Random.Range(1.5f, 2.5f);
+                animator.SetTrigger("LookAround");
+                break;
+        }
     }
+
 
     void MoveCat()
     {
@@ -147,31 +204,7 @@ public class CatBehaviour : MonoBehaviour
             }
         }
     }
-    //void ChooseMovement()
-    //{
-    //    switch (personality)
-    //    {
-    //        case Personality.Confident:
-    //            animator.SetTrigger("Run");
-    //            targetPosition = GetRandomTarget();
-    //            break;
-    //        case Personality.Timid:
-    //            StartCoroutine(TimidBehaviour());
-    //            break;
-    //        case Personality.Playful:
-    //            StartCoroutine(PlayfulBehaviour());
-    //            break;
-    //        case Personality.Lazy:
-    //            StartCoroutine(LazyBehaviour());
-    //            break;
-    //        case Personality.Mischievous:
-    //            StartCoroutine(MischievousBehaviour());
-    //            break;
-    //        case Personality.Social:
-    //            StartCoroutine(SocialBehaviour());
-    //            break;
-    //    }
-    //}
+
     void PerformAction()
     {
         switch (personality)
@@ -203,15 +236,34 @@ public class CatBehaviour : MonoBehaviour
 
     void ResumeMovement(float delay = 0.5f)
     {
-        StartCoroutine(ResumeAfterDelay(delay));
+        targetPosition = endPoint.position;
+        animator.SetBool("isWalking", true);
+        //StartCoroutine(ResumeAfterDelay(delay));
+    }
+
+    void StopAtEnd()
+    {
+        animator.SetBool("isWalking", false);
     }
 
     IEnumerator ResumeAfterDelay(float delay)
     {
-        yield return new WaitForSeconds(delay);
-        animator.SetBool("isPausedOnBack", false);
-        animator.SetBool("isDoingPersonalityAction", false);
         animator.SetBool("isWalking", true);
+        if (hasPausedOnBack)
+        {
+            hasPausedOnBack = false;
+            animator.SetBool("isPaused", false);
+            yield return new WaitForSeconds(delay);
+            ResumeMovement();
+        }
+
+        else if (hasDoneAction)
+        {
+            hasDoneAction = false;
+            animator.SetBool("isDoingAction", false);
+            yield return new WaitForSeconds(delay);
+            ResumeMovement();
+        }
     }
 
     IEnumerator TimidPause()
@@ -220,44 +272,4 @@ public class CatBehaviour : MonoBehaviour
         animator.SetBool("IsWalking", true);
         isMoving = true;
     }
-
-    //IEnumerator TimidBehaviour()
-    //{
-    //    animator.SetTrigger("Walk");
-    //    yield return new WaitforSeconds(Random.Range(1f, 3f));
-    //    animator.SetTrigger("Idle");
-    //}
-
-    //IEnumerator PlayfulBehaviour()
-    //{
-    //    animator.SetTrigger("Jump");
-    //    yield return new WaitforSeconds(1f);
-    //    animator.SetTrigger("Run");
-    //}
-
-    //IEnumerator LazyBehaviour()
-    //{
-    //    animator.SetTrigger("LieDown");
-    //    yield return new WaitforSeconds(Random.Range(3f, 5f));
-    //    animator.SetTrigger("Walk");
-    //}
-
-    //IEnumerator MischievousBehaviour()
-    //{
-    //    animator.SetTrigger("Crouch");
-    //    yield return new WaitforSeconds(1.5f);
-    //    animator.SetTrigger("Run");
-    //}
-
-    //IEnumerator SocialBehaviour()
-    //{
-    //    animator.SetTrigger("Walk");
-    //    yield return new WaitforSeconds(2f);
-    //    animator.SetTrigger("Interact");
-    //}
-
-    //private Vector3 GetRandomTarget()
-    //{
-    //    return new Vector3(transform.position.x + GetRandomTarget().Range(1f, 5f), transform.position.y, transform.position.z);
-    //}
 }

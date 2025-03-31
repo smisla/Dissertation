@@ -5,6 +5,8 @@ public class CatSpawner : MonoBehaviour
 {
     public GameObject catPrefab;
 
+    public Material[] catMaterials;
+
     public Transform startPoint;
     public Transform middlePoint;
     public Transform endPoint;
@@ -48,10 +50,38 @@ public class CatSpawner : MonoBehaviour
         //}
     }
 
+    void AssignMaterial(GameObject cat)
+    {
+        if (catMaterials.Length == 0) return;
+
+        Material chosenMaterial = catMaterials[Random.Range(0, catMaterials.Length)];
+
+        SkinnedMeshRenderer catRenderer = cat.GetComponentInChildren<SkinnedMeshRenderer>();
+
+        if (catRenderer != null)
+        {
+            catRenderer.material = new Material(chosenMaterial);
+
+        }
+        else
+        {
+            Debug.LogError("No SkinnedMeshRenderer found in " + cat.name);
+        }
+    }
+
+    void AssignSize(GameObject cat)
+    {
+        float randomHeight = Random.Range(0.8f, 1.2f);
+        float randomWidth = Random.Range(0.8f, 1.1f);
+        cat.transform.localScale = new Vector3(randomWidth, randomHeight, randomWidth);
+    }
+
     void SpawnCat()
     {
         GameObject newCat = Instantiate(catPrefab, startPoint.position, Quaternion.LookRotation(endPoint.position - startPoint.position));
         CatBehaviour catScript = newCat.GetComponent<CatBehaviour>();
+        AssignSize(newCat);
+        AssignMaterial(newCat);
 
         if (catScript != null)
         {

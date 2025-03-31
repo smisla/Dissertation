@@ -1057,6 +1057,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   personality: 0
+  startPointObj: {fileID: 0}
+  middlePointObj: {fileID: 0}
+  endPointObj: {fileID: 0}
   speed: 2
   pauseChance: 0.3
   actionChance: 0.2
