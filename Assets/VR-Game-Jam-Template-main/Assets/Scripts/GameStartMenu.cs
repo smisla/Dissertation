@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameStartMenu : MonoBehaviour
 {
@@ -18,6 +19,12 @@ public class GameStartMenu : MonoBehaviour
 
     public List<Button> returnButtons;
 
+    public Camera playerCamera;
+
+    public Transform xrOrigin;
+
+    public float menuDistance = 5f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,7 +32,7 @@ public class GameStartMenu : MonoBehaviour
 
         //Hook events
         startButton.onClick.AddListener(StartGame);
-        optionButton.onClick.AddListener(EnableOption);
+        optionButton.onClick.AddListener(EnableOptions);
         aboutButton.onClick.AddListener(EnableAbout);
         quitButton.onClick.AddListener(QuitGame);
 
@@ -58,9 +65,11 @@ public class GameStartMenu : MonoBehaviour
         mainMenu.SetActive(true);
         options.SetActive(false);
         about.SetActive(false);
+
     }
-    public void EnableOption()
+    public void EnableOptions()
     {
+        SceneManager.LoadScene("CalibrationScene");
         mainMenu.SetActive(false);
         options.SetActive(true);
         about.SetActive(false);

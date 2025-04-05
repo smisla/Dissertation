@@ -2158,6 +2158,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   countdownText: {fileID: 1485044690}
   countdownTime: 3
+  catSpawner: {fileID: 949901709}
 --- !u!114 &1469203537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2963,7 +2964,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.26, y: 1.1140397, z: 0.29}
-  m_LocalScale: {x: 0.1, y: 2, z: -2}
+  m_LocalScale: {x: 0.1, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 47057502}
@@ -3251,16 +3252,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   personality: 0
-  startPointObj: {fileID: 0}
-  slowDownPointObj: {fileID: 0}
-  middlePointObj: {fileID: 0}
-  endPointObj: {fileID: 0}
   speed: 2
   saveSpeed: 2
   pauseChance: 0.3
   actionChance: 0.2
   animSpeed: 0
   delaySpeed: 3
+  stopThreshold: 0.5
+  wasOffset: 0
 --- !u!4 &2078837220 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1518254071577692950, guid: ed04352b858e7364cb1d94dd4b02006f, type: 3}

@@ -8,6 +8,8 @@ public class CountdownTimer : MonoBehaviour
     public float countdownTime = 3f;
     public System.Action onCountdownComplete;
 
+    public CatSpawner catSpawner;
+
     public void OnEnable()
     {
         StartCoroutine(StartCountdown());
@@ -27,5 +29,10 @@ public class CountdownTimer : MonoBehaviour
         countdownText.gameObject.SetActive(false);
 
         onCountdownComplete?.Invoke();
+
+        if (catSpawner != null)
+        {
+            catSpawner.StartSpawning();
+        }
     }
 }
