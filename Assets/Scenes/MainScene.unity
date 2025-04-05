@@ -1138,6 +1138,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Banana Man
       objectReference: {fileID: 0}
+    - target: {fileID: 121511832935579924, guid: ed04352b858e7364cb1d94dd4b02006f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 784861030291446702, guid: ed04352b858e7364cb1d94dd4b02006f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1601,6 +1605,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CartoonCat
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 004605dfc469de141a5bfba9c24852d5, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 8e8f9c5f1d43cf74ea5e7b4064fc4c8f, type: 2}
     - target: {fileID: 8605921409018251036, guid: 004605dfc469de141a5bfba9c24852d5, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1763,11 +1771,12 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 2854ae4988393a242bb22872beb37620, type: 2}
   - {fileID: 2100000, guid: 1507c46237e5aa244a71b1c7f3915316, type: 2}
   startPoint: {fileID: 949901710}
+  slowDownPoint: {fileID: 1818929521}
   middlePoint: {fileID: 1839058672}
   endPoint: {fileID: 1971841734}
   destination: {fileID: 1971841734}
   spawnInterval: 5
-  maxCats: 5
+  maxCats: 20
   isSpawning: 0
 --- !u!4 &949901710
 Transform:
@@ -2779,6 +2788,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1818929520
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1818929521}
+  m_Layer: 0
+  m_Name: CatSlowDownPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1818929521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1818929520}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -1.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1839058671
 GameObject:
   m_ObjectHideFlags: 0
@@ -3212,11 +3252,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   personality: 0
   startPointObj: {fileID: 0}
+  slowDownPointObj: {fileID: 0}
   middlePointObj: {fileID: 0}
   endPointObj: {fileID: 0}
   speed: 2
+  saveSpeed: 2
   pauseChance: 0.3
   actionChance: 0.2
+  animSpeed: 0
+  delaySpeed: 3
 --- !u!4 &2078837220 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1518254071577692950, guid: ed04352b858e7364cb1d94dd4b02006f, type: 3}
@@ -3434,8 +3478,9 @@ SceneRoots:
   - {fileID: 2013271403}
   - {fileID: 949901710}
   - {fileID: 1839058672}
-  - {fileID: 372696496}
+  - {fileID: 1818929521}
   - {fileID: 1971841734}
+  - {fileID: 372696496}
   - {fileID: 2049919224}
   - {fileID: 1906641572}
   - {fileID: 6641522}

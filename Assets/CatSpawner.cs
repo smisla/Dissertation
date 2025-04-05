@@ -8,6 +8,7 @@ public class CatSpawner : MonoBehaviour
     public Material[] catMaterials;
 
     public Transform startPoint;
+    public Transform slowDownPoint;
     public Transform middlePoint;
     public Transform endPoint;
 
@@ -72,8 +73,7 @@ public class CatSpawner : MonoBehaviour
     void AssignSize(GameObject cat)
     {
         float randomHeight = Random.Range(0.8f, 1.2f);
-        float randomWidth = Random.Range(0.8f, 1.1f);
-        cat.transform.localScale = new Vector3(randomWidth, randomHeight, randomWidth);
+        cat.transform.localScale = new Vector3(randomHeight, randomHeight, randomHeight);
     }
 
     void SpawnCat()
@@ -85,7 +85,7 @@ public class CatSpawner : MonoBehaviour
 
         if (catScript != null)
         {
-            catScript.SetTargetPositions(startPoint, middlePoint, endPoint);
+            catScript.SetTargetPositions(startPoint, slowDownPoint, middlePoint, endPoint);
         }
 
         currentCatCount++;
