@@ -20,6 +20,7 @@ public class CatBehaviour : MonoBehaviour
     public float saveSpeed = 2f;
     public float pauseChance = 0.3f;
     public float actionChance = 0.2f;
+    public float decelerationDistance;
 
     [Header("Animation Settings")]
     public float animSpeed;
@@ -49,6 +50,11 @@ public class CatBehaviour : MonoBehaviour
     private Vector3 targetPosition;
     #endregion
 
+    #region AI Controllers
+    private NavMeshAgent agent;
+    private CatAIController aiController;
+    private bool hasReachedEnd = false;
+
     #region State Flags
     private bool hasPausedOnBack = false;
     private bool hasDoneAction = false;
@@ -65,8 +71,13 @@ public class CatBehaviour : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
-        animator.SetBool("isWalking", true);
+        agent = GetComponent<NavMeshAgent>();
+        aiController = GetComponent<CatAIController>();
 
+        if (agent != null) agent.enabled = false;
+        if (aiController != null) aiController.enabled = false;
+
+        animator.SetBool("isWalking", true);
         transform.position = startPoint.position;
         targetPosition = slowDownPoint.position;
 
@@ -93,9 +104,9 @@ public class CatBehaviour : MonoBehaviour
 
         UpdateAnimSpeed();
 
-        Debug.Log("cat: " + this.gameObject.name);
-        Debug.Log("speed " + speed);
-        Debug.Log("animSpeed " + animSpeed);
+        //Debug.Log("cat: " + this.gameObject.name);
+        //Debug.Log("speed " + speed);
+        //Debug.Log("animSpeed " + animSpeed);
 
         if (!animator.GetBool("isWalking")) return;
 
@@ -273,7 +284,31 @@ public class CatBehaviour : MonoBehaviour
 
     void StopAtEnd()
     {
+        if (hasReachedEnd) return;
+
+        hasReachedEnd = true;
+
         animator.SetBool("isWalking", false);
+
+        if (agent != null) agent.enabled = true;
+        if (aiController != null) aiController.enabled = true;
+
+        CatAIController catAI = GetComponent<CatAIController>();
+        if (catAI != null)
+        {
+            catAI.EnableWandering();
+        }
+
+        ////Transition to AI behaviour
+        //if (agent != null && aiController != null)
+        //{
+        //    agent.enabled = true;
+        //    aiController.enabled = true;
+        //}
+
+        //FindObjectOfType<CatSpawner>()?.CatReachedDestination();
+
+        //this.enabled = false; //watch out it doesnt do this for other cats and just this one?
     }
 
     IEnumerator ResumeAfterDelay(float delay)
@@ -308,3 +343,4 @@ public class CatBehaviour : MonoBehaviour
     #endregion
 }
 
+#endregion

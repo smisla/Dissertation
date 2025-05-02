@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using System.Collections;
 using TMPro;
 
@@ -81,6 +82,7 @@ public class CatSpawner : MonoBehaviour
     void SpawnCat()
     {
         GameObject newCat = Instantiate(catPrefab, startPoint.position, Quaternion.LookRotation(endPoint.position - startPoint.position));
+        NavMeshAgent newAgent = newCat.GetComponent<NavMeshAgent>();
         CatBehaviour catScript = newCat.GetComponent<CatBehaviour>();
         AssignSize(newCat);
         AssignMaterial(newCat);
