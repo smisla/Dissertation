@@ -150,6 +150,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   calibrationText: {fileID: 1969279616}
   countdownTime: 5
+  minHeight: 2.030298
+  maxHeight: 2.24396
   uiCenter: {fileID: 1809041599}
   yHeight: 0.5
   playerCamera: {fileID: 1755167162}

@@ -1085,9 +1085,35 @@ MonoBehaviour:
   saveSpeed: 2
   pauseChance: 0.3
   actionChance: 0.2
+  decelerationDistance: 0
   animSpeed: 0
   delaySpeed: 3
   stopThreshold: 0.5
+  shockedAnimations:
+  - co_attack_f
+  - co_hit_m
+  - crouchidle_loop_1
+  - crouchidle_loop_2
+  - hit_b
+  - hit_f
+  - hit_m
+  - idle_2
+  - idle_3
+  - idle_4
+  - jump_place_ip
+  - lick
+  climbUpTrigger: ClimbUp
+  jumpUpTrigger: JumpUp
+  jumpDownStartTrigger: JumpDown_Start
+  jumpDownLandTrigger: JumpDown_Land
+  climbDuration: 1.5
+  jumpStartDuration: 0.6
+  jumpLandDuration: 1.2
+  raycastHeight: 2
+  maxRayDistance: 5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
   wasOffset: 0
 --- !u!114 &-2351608844895417115
 MonoBehaviour:
@@ -1115,6 +1141,21 @@ MonoBehaviour:
   animSpeed: 0
   delaySpeed: 3
   stopThreshold: 0.5
+  shockedAnimations:
+  - co_attack_f
+  - co_hit_m
+  - crouchidle_loop_1
+  - crouchidle_loop_2
+  - hit_b
+  - hit_f
+  - hit_m
+  - idle_2
+  - idle_3
+  - idle_4
+  - jump_place_ip
+  - lick
+  slowDownTime: 1.5
+  lookAtSpeed: 4
   headTurnSpeed: 5
 --- !u!1 &4773435262554797180
 GameObject:

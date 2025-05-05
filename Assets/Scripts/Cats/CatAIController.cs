@@ -22,6 +22,7 @@ public class CatAIController : MonoBehaviour
     public Transform playerTransform;
     public LayerMask catLayer;
 
+    
     private bool isWandering = false;
 
     private CatBehaviourState currentState;
@@ -33,6 +34,10 @@ public class CatAIController : MonoBehaviour
     public const float CROUCH_THRESHOLD = 0.5f;
     public const float WALK_THRESHOLD = 1f;
     public const float RUN_THRESHOLD = 2f;
+    public List<string> shockedAnimations;
+    public float slowDownTime = 1.5f;
+    public float lookAtSpeed = 5f;
+    private bool gameStopped = false;
 
     private CatBehaviour catBehaviour;
 
@@ -49,6 +54,9 @@ public class CatAIController : MonoBehaviour
     private Transform neck;
     private Vector3 lookTarget;
     public float headTurnSpeed = 5f;
+
+    private Transform player;
+
 
     public void Start()
     {
@@ -72,12 +80,14 @@ public class CatAIController : MonoBehaviour
         {
             Debug.LogError("NavMeshAgent component not found on this object");
         }
-        else
-        {
-            Debug.Log("NavMeshAgent FOUND");
-        }
         agent.isStopped = true;
         agent.speed = 0;
+
+        if (playerTransform == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) playerTransform = player.transform;
+        }
         
         //float speed = Random.Range(0.5f, 2.5f);
         //agent.speed = speed;
@@ -140,7 +150,7 @@ public class CatAIController : MonoBehaviour
                 agent.isStopped = true;
                 agent.speed = 0;
                 animator.SetFloat("WalkSpeed", 0);
-                animator.SetFloat("AnimSpeed", 0.1f);
+                animator.SetFloat("AnimSpeed", 0.5f);
                 state = CatBehaviourState.Idle;
             }
         }
@@ -208,8 +218,8 @@ public class CatAIController : MonoBehaviour
         if (catBehaviour != null) catBehaviour.enabled = false;
         if (!isWandering)
         {
-            Debug.LogWarning("WANDERING ENABLED");
             isWandering = true;
+            state = CatBehaviourState.Wander;
             StartCoroutine(BehaviourLoop());
         }
     }
@@ -228,7 +238,6 @@ public class CatAIController : MonoBehaviour
             yield return new WaitForSeconds(decisionInterval);
 
             if (agent.hasPath && agent.velocity.sqrMagnitude > 0f) continue;
-            Debug.LogWarning("PICKING BEHAVIOUR");
             ChooseNewBehaviour();
         }
     }
@@ -262,8 +271,6 @@ public class CatAIController : MonoBehaviour
                     targetAnimSpeed = newSpeed;
                     //currentAnimSpeed = 0f;
                     rampingUp = true;
-
-                    Debug.LogWarning($"Cat {gameObject.name} moving to wander point: {wanderPoint}");
                 }
                 break;
         }
@@ -353,6 +360,79 @@ public class CatAIController : MonoBehaviour
         }
         return Vector3.zero;
 
+    }
+
+    public void OnGameStopped()
+    {
+        if (gameStopped) return;
+        gameStopped = true;
+
+        StopAllCoroutines();
+
+        if (agent != null)
+        {
+            StartCoroutine(SlowDownAndStop());
+        }
+
+        if (playerTransform != null)
+        {
+            StartCoroutine(LookAtPlayer());
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} playerTransform is: {(playerTransform == null ? "NULL" : playerTransform.name)}");
+        }
+
+        if (animator != null && shockedAnimations.Count > 0)
+        {
+            string shockedTrigger = shockedAnimations[Random.Range(0, shockedAnimations.Count)];
+            animator.SetTrigger(shockedTrigger);
+
+        }
+    }
+
+    IEnumerator SlowDownAndStop()
+    {
+        float startSpeed = agent.speed;
+        float elapsed = 0f;
+
+        while (elapsed < slowDownTime)
+        {
+            float t = elapsed / slowDownTime;
+            agent.speed = Mathf.Lerp(startSpeed, 0f, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        agent.speed = 0f;
+        agent.isStopped = true;
+
+        if (animator != null)
+        {
+            animator.SetFloat("WalkSpeed", 0f);
+            animator.SetFloat("AnimSpeed", 0.1f);
+        }
+    }
+
+    IEnumerator LookAtPlayer()
+    {
+        while (true)
+        {
+            Debug.Log($"{gameObject.name} starting to look at player.");
+            if (playerTransform == null) yield break;
+
+            Vector3 lookDir = playerTransform.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(lookDir.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * lookAtSpeed);
+
+                //handle animation turn??
+
+            }
+
+            yield return null;
+        }
     }
 
     //void MoveToRandPoint(float speed)

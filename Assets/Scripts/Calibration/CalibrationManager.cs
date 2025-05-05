@@ -11,8 +11,8 @@ public class CalibrationManager : MonoBehaviour
     public float countdownTime = 5f;
 
     private XRNode inputSource = XRNode.Head;
-    private float minHeight = float.PositiveInfinity;
-    private float maxHeight = float.NegativeInfinity;
+    public float minHeight = float.PositiveInfinity;
+    public float maxHeight = float.NegativeInfinity;
     private bool isCalibratingDown = false;
     private bool isCalibratingUp = false;
     public Transform uiCenter;
@@ -127,6 +127,9 @@ public class CalibrationManager : MonoBehaviour
     {
         // Store the minHeight and maxHeight values for later use (e.g., save to a global manager)
         Debug.Log($"Min Height: {minHeight}, Max Height: {maxHeight}");
+
+        PlayerPrefs.SetFloat("PlankMinHeight", minHeight);
+        PlayerPrefs.SetFloat("PlankMaxHeight", maxHeight);
 
         SceneManager.LoadScene("StartScene");
         

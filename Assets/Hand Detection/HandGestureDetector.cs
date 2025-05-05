@@ -22,7 +22,18 @@ public class HandGestureDetector : MonoBehaviour
 
     public float threshold = 0.1f;
     public XRHandSubsystem handSubsystem;
-    public List<Gesture> gestures;
+    public List<Gesture> leftHandGesture;
+    public List<Gesture> rightHandGesture;
+
+    public string currentLeftGestureName {  get; private set; }
+    public string currentRightGestureName {  get; private set; }
+
+    private bool gestureSystemInitialised = false;
+
+    public bool IsReady()
+    {
+        return gestureSystemInitialised;
+    }
     public bool debugMode = true;
     private Gesture previousGesture;
 
@@ -46,63 +57,78 @@ public class HandGestureDetector : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            Save();
-            Debug.Log("Saving Gesture...");
+            Save(isLeftHand: true);
+            Debug.Log("Saving Left Gesture...");
         }
 
-        Gesture currentGesture = Recognise();
-        bool hasRecognised = !currentGesture.Equals(new Gesture());
-
-        if (hasRecognised && currentGesture.Equals(previousGesture))
+        if (Input.GetKeyUp(KeyCode.R))
         {
-            Debug.Log("New Gesture Found: " + currentGesture.name);
-            previousGesture = currentGesture;
-            currentGesture.onRecognised.Invoke();
+            Save(isLeftHand: false);
+            Debug.Log("Saving Right Gesture...");
         }
+
+        Gesture leftGesture = Recognise(true);
+        Gesture rightGesture = Recognise(false);
+
+        currentLeftGestureName = leftGesture.name;
+        currentRightGestureName = rightGesture.name;
 
         if (gestureText != null)
         {
-            gestureText.text = "Gesture: " + currentGesture.name;
-        }
-
-        else
-        {
-            if (gestureText != null)
-            {
-                gestureText.text = "Gesture: None";
-            }
+            gestureText.text = $"Left: {leftGesture.name} | Right: {rightGesture.name}";
         }
     }
 
-    void Save()
+    void Save(bool isLeftHand)
     {
         Gesture g = new Gesture();
-        g.name = "New Gesture";
+        g.name = isLeftHand ? "Left Gesture" : "Right Gesture";
         List<Vector3> data = new List<Vector3>();
 
-        XRHand leftHand = handSubsystem.leftHand;
-        XRHand rightHand = handSubsystem.rightHand;
+        XRHand hand = isLeftHand ? handSubsystem.leftHand : handSubsystem.rightHand;
 
-        if (leftHand.isTracked)
-        {
-            Debug.Log("Left hand detected. Saving...");
-            SaveHandData(leftHand, data);
-        }
-        else if (rightHand.isTracked)
-        {
-            Debug.Log("Right hand detected. Saving...");
-            SaveHandData(rightHand, data);
-        }
+        //XRHand leftHand = handSubsystem.leftHand;
+        //XRHand rightHand = handSubsystem.rightHand;
 
-        if (!leftHand.isTracked && !rightHand.isTracked)
+        if (!hand.isTracked)
         {
-            Debug.LogError("No hand detected when trying to save!");
+            Debug.LogError($"{(isLeftHand ? "Left" : "Right")} hand not tracked!");
             return;
         }
 
+        SaveHandData(hand, data);
         g.fingerData = data;
-        gestures.Add(g);
-        Debug.Log("Gesture saved successfully! Recorded " + g.fingerData.Count + " joint positions.");
+
+        if (isLeftHand)
+        {
+            leftHandGesture.Add(g);
+        }
+        else
+        {
+            rightHandGesture.Add(g);
+        }
+
+        Debug.Log($"{(isLeftHand ? "Left" : "Right")} hand gesture saved with {data.Count} joint positions.");
+        //if (leftHand.isTracked)
+        //{
+        //    Debug.Log("Left hand detected. Saving...");
+        //    SaveHandData(leftHand, data);
+        //}
+        //else if (rightHand.isTracked)
+        //{
+        //    Debug.Log("Right hand detected. Saving...");
+        //    SaveHandData(rightHand, data);
+        //}
+
+        //if (!leftHand.isTracked && !rightHand.isTracked)
+        //{
+        //    Debug.LogError("No hand detected when trying to save!");
+        //    return;
+        //}
+
+        //g.fingerData = data;
+        //leftHandGesture.Add(g);
+        //Debug.Log("Gesture saved successfully! Recorded " + g.fingerData.Count + " joint positions.");
     }
 
     private void SaveHandData(XRHand hand, List<Vector3> data)
@@ -133,46 +159,27 @@ public class HandGestureDetector : MonoBehaviour
         }
     }
 
-    Gesture Recognise()
+    Gesture Recognise(bool isLeftHand)
     {
         Gesture currentGesture = new Gesture();
         float currentMin = Mathf.Infinity;
 
+        XRHand hand = isLeftHand ? handSubsystem.leftHand : handSubsystem.rightHand;
 
-        XRHand leftHand = handSubsystem.leftHand;
-        XRHand rightHand = handSubsystem.rightHand;
+        if (!hand.isTracked) return currentGesture;
 
-        XRHand hand = leftHand.isTracked ? leftHand : rightHand;
+        if (!hand.GetJoint(XRHandJointID.Wrist).TryGetPose(out Pose wristPose)) return currentGesture;
 
-        if (hand == null || !hand.isTracked)
+        List<Gesture> gestureList = isLeftHand ? leftHandGesture : rightHandGesture;
+
+        foreach (var gesture in gestureList)
         {
-            Debug.LogWarning("No valid hand detected");
-            return currentGesture;
-        }
+            if (gesture.fingerData.Count != 9) continue;
 
-        XRHandJoint wristJoint = hand.GetJoint(XRHandJointID.Wrist);
-        Pose wristPose = new Pose();
-
-        if (!wristJoint.TryGetPose(out wristPose))
-        {
-            Debug.LogWarning("No wrist pose found! Skipping recognition.");
-            return currentGesture;
-        }
-
-        foreach (var gesture in gestures)
-        {
-            if (gesture.fingerData.Count != 9)
-            {
-                Debug.LogWarning("Gesture data does not match expected joint count. Skipping gesture.");
-                continue;
-            }
-
-            float sumDistance = 0;
+            float sumDistance = 0f;
             bool isDiscarded = false;
 
-            for (int i = 0; i < gesture.fingerData.Count; i++)
-            {
-                XRHandJointID[] trackedJoints =
+            XRHandJointID[] trackedJoints =
                 {
                     XRHandJointID.ThumbTip, XRHandJointID.IndexTip, XRHandJointID.MiddleTip,
                     XRHandJointID.RingTip, XRHandJointID.LittleTip,
@@ -180,32 +187,20 @@ public class HandGestureDetector : MonoBehaviour
                     XRHandJointID.RingIntermediate, XRHandJointID.LittleIntermediate
                 };
 
-                XRHandJointID jointID = trackedJoints[i];
-                XRHandJoint joint = hand.GetJoint(jointID);
+            for (int i = 0; i < trackedJoints.Length; i++)
+            {
+                if (!hand.GetJoint(trackedJoints[i]).TryGetPose(out Pose pose)) { isDiscarded = true; break; }
 
-                if (!joint.TryGetPose(out Pose fingerPose))
+                Vector3 relativePosition = pose.position - wristPose.position;
+                float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
+
+                if (distance > threshold)
                 {
-                    Debug.LogWarning($"Failed to get pose for joint {jointID}. Skipping this joint.");
                     isDiscarded = true;
                     break;
                 }
-                //float distance = Vector3.Distance(currentData, gesture.fingerDatas[i]);
-                if (joint.TryGetPose(out Pose pose))
-                {
-                    Vector3 relativePosition = pose.position - wristPose.position;
-                    float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
 
-                    Debug.Log($"Comparing {jointID} - Distance: {distance}");  // Debug log for gesture comparison
-
-
-                    if (distance > threshold)
-                    {
-                        isDiscarded = true;
-                        break;
-                    }
-
-                    sumDistance += distance;
-                }
+                sumDistance += distance;
             }
 
             if (!isDiscarded && sumDistance < currentMin)
@@ -216,4 +211,81 @@ public class HandGestureDetector : MonoBehaviour
         }
         return currentGesture;
     }
+
+        //XRHand leftHand = handSubsystem.leftHand;
+        //XRHand rightHand = handSubsystem.rightHand;
+
+        //XRHand hand = leftHand.isTracked ? leftHand : rightHand;
+
+        //if (hand == null || !hand.isTracked)
+        //{
+        //    Debug.LogWarning("No valid hand detected");
+        //    return currentGesture;
+        //}
+
+        //XRHandJoint wristJoint = hand.GetJoint(XRHandJointID.Wrist);
+        //Pose wristPose = new Pose();
+
+        //if (!wristJoint.TryGetPose(out wristPose))
+        //{
+        //    Debug.LogWarning("No wrist pose found! Skipping recognition.");
+        //    return currentGesture;
+        //}
+
+        //foreach (var gesture in leftHandGesture)
+        //{
+        //    if (gesture.fingerData.Count != 9)
+        //    {
+        //        Debug.LogWarning("Gesture data does not match expected joint count. Skipping gesture.");
+        //        continue;
+        //    }
+
+        //    float sumDistance = 0;
+        //    bool isDiscarded = false;
+
+        //    for (int i = 0; i < gesture.fingerData.Count; i++)
+        //    {
+        //        XRHandJointID[] trackedJoints =
+        //        {
+        //            XRHandJointID.ThumbTip, XRHandJointID.IndexTip, XRHandJointID.MiddleTip,
+        //            XRHandJointID.RingTip, XRHandJointID.LittleTip,
+        //            XRHandJointID.IndexIntermediate, XRHandJointID.MiddleIntermediate,
+        //            XRHandJointID.RingIntermediate, XRHandJointID.LittleIntermediate
+        //        };
+
+        //        XRHandJointID jointID = trackedJoints[i];
+        //        XRHandJoint joint = hand.GetJoint(jointID);
+
+        //        if (!joint.TryGetPose(out Pose fingerPose))
+        //        {
+        //            Debug.LogWarning($"Failed to get pose for joint {jointID}. Skipping this joint.");
+        //            isDiscarded = true;
+        //            break;
+        //        }
+        //        //float distance = Vector3.Distance(currentData, gesture.fingerDatas[i]);
+        //        if (joint.TryGetPose(out Pose pose))
+        //        {
+        //            Vector3 relativePosition = pose.position - wristPose.position;
+        //            float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
+
+        //            Debug.Log($"Comparing {jointID} - Distance: {distance}");  // Debug log for gesture comparison
+
+
+        //            if (distance > threshold)
+        //            {
+        //                isDiscarded = true;
+        //                break;
+        //            }
+
+        //            sumDistance += distance;
+        //        }
+        //    }
+
+        //    if (!isDiscarded && sumDistance < currentMin)
+        //    {
+        //        currentMin = sumDistance;
+        //        currentGesture = gesture;
+        //    }
+        //}
+        //return currentGesture;
 }
