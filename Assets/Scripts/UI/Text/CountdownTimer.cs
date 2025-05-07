@@ -18,6 +18,7 @@ public class CountdownTimer : MonoBehaviour
     public TextMeshProUGUI timerText;
     public float countdownTime = 3f;
     public System.Action onCountdownComplete;
+    public bool countdownComplete = false;
 
     public CatSpawner catSpawner;
     public Timer timer;
@@ -65,7 +66,9 @@ public class CountdownTimer : MonoBehaviour
 
         //countdownText.gameObject.SetActive(false);
 
+        
         onCountdownComplete?.Invoke();
+        countdownComplete = true;
 
         if (catSpawner != null)
         {

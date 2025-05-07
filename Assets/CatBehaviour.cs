@@ -267,7 +267,6 @@ public class CatBehaviour : MonoBehaviour
 
         if (other.CompareTag("CatClimbUp") && !hasClimbed)
         {
-            Debug.Log("Climbing");
             hasClimbed = true;
             StartCoroutine(ClimbRoutine(climbUpTrigger, other.transform.position));
         }
@@ -294,8 +293,6 @@ public class CatBehaviour : MonoBehaviour
             animator.SetFloat("WalkSpeed", speed);
             animator.SetBool("isWalking", true);
             yield return new WaitForSeconds(1.3073f);
-
-            Debug.Log("time up");
 
             speed = 0f;
 

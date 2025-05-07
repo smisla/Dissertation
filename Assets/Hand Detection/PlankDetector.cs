@@ -13,57 +13,250 @@ public class PlankDetector : MonoBehaviour
     public Transform headset;
     public HandGestureDetector gestureDetector;
     public TextMeshProUGUI plankStatusText;
+    public TextMeshProUGUI detectorText;
     public CatSpawner catSpawner;
+    public CountdownTimer countdown;
+    public PostProcessingController postFXController;
 
     [Header("Tuning")]
-    public float heightTolerance = 0.05f;
+    public float heightTolerance = 0.5f;
 
     [Header("Events")]
     public UnityEvent OnPlankBroken;
+    private bool plankBreakInitiated = false;
+    private float plankBreakTimer = 0f;
+    private float breakCountdownDuration = 3f;
 
+    [Header("Effects")]
+    public GameObject postProcessingEffects;
+    public AudioSource heartbeatAudio;
+    //script that has game end handling
+
+    [Header("Height Logic")]
     private float minHeight;
     private float maxHeight;
+    private float currentHeight = float.PositiveInfinity;
     public bool isPlanking = false;
     public bool calibrationLoaded = false;
     public bool previousPlankState = true;
+    private LayerMask groundLayer;
 
-    private void Start()
+    private void Start() // Loads player boundaries
     {
         LoadCalibration();
+
+        groundLayer = LayerMask.GetMask("Ground");
     }
 
-    private void Update()
+    private void Update() // if isPlanking and calibration loaded is true, run detection logic. Checks for plank break, handles plank break.
     {
+        TrackHeight();
+        //float currentHeight = headset.position.y;
+        string left = gestureDetector.currentLeftGestureName;
+        string right = gestureDetector.currentRightGestureName;
+
+        bool heightBroken = currentHeight < (minHeight - heightTolerance) || currentHeight > (maxHeight + heightTolerance);
+        bool handsOpen = left == "Open" && right == "Open";
+
+        detectorText?.SetText($"MinHeight: {minHeight}, MaxHeight: {maxHeight}, Height: {currentHeight:F2}\nLeft: {left}, Right: {right}");
 
         if (!isPlanking || !calibrationLoaded) return;
 
-        CheckPlankStatus();
-
-        bool isBroken = IsPlankBroken();
-
-        if (isBroken != previousPlankState)
+        if (countdown.countdownComplete)
         {
-            plankStatusText.text = isBroken ? "Plank Broken" : "Plank Stable";
-            previousPlankState = isBroken;
 
-            if (isBroken)
+            if (heightBroken && handsOpen)
             {
-                isPlanking = false;
-                HandlePlankBreak();
-                OnPlankBroken?.Invoke();
+                // Immediate Plank Break
+                HandleImmediateBreak();
+            }
+            else if (heightBroken && !handsOpen)
+            {
+                // Player Out of Bounds
+                if (!plankBreakInitiated)
+                {
+                    // Start Countdown
+                    plankBreakInitiated = true;
+                    plankBreakTimer = 0f;
+                    Debug.Log("PlankDetector: Countdown started due to height break");
+                }
+                plankBreakTimer += Time.deltaTime;
+                float t = plankBreakTimer / breakCountdownDuration;
+                UpdateBreakCountdownEffects(t);
+                //StartBreakCountdownEffects();
+                    
+
+                //plankBreakTimer += Time.deltaTime;
+                //UpdateBreakCountdownEffects(plankBreakTimer / breakCountdownDuration);
+
+                if (plankBreakTimer >= breakCountdownDuration)
+                {
+                    HandleCountdownBreak();
+                }
+            }
+            else
+            {
+                // Player in bounds
+                if (plankBreakInitiated)
+                {
+                    plankBreakInitiated = false;
+                    plankBreakTimer = 0f;
+                    float t = 1.5f;
+                    StopBreakCountdownEffects(t);
+                    Debug.Log("PlankDetector: Returned to valid plank position. Countdown cancelled");
+                }
+
+                if (handsOpen)
+                {
+                    postFXController?.ApplyHandWarningEffect(Time.deltaTime * 5f);
+                    plankStatusText?.SetText("Hands not supporting plank!");
+                    //visual warning
+                }
+                else
+                {
+                    postFXController?.ClearHandWarningEffect(Time.deltaTime * 5f);
+                    plankStatusText?.SetText("Planking...");
+                }
             }
         }
+        
 
-        if (Input.GetKeyDown(KeyCode.T))
+        //CheckPlankStatus();
+
+        //bool isBroken = IsPlankBroken();
+
+        //if (isBroken != previousPlankState)
+        //{
+        //    plankStatusText.text = isBroken ? "Plank Broken" : "Plank Stable";
+        //    previousPlankState = isBroken;
+
+        //    if (isBroken)
+        //    {
+        //        isPlanking = false;
+        //        HandlePlankBreak();
+        //        OnPlankBroken?.Invoke();
+        //    }
+        //}
+
+        //if (Input.GetKeyDown(KeyCode.T))
+        //{
+        //    Debug.LogWarning("DEBUG: Triggering simulated plank break");
+        //    isPlanking = false;
+        //    plankStatusText.text = "Plank Broken (Debug)";
+        //    HandlePlankBreak();
+        //    OnPlankBroken?.Invoke();
+        //}
+    }
+
+    private void TrackHeight()
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(headset.transform.position, Vector3.down, out hit, Mathf.Infinity, groundLayer))
         {
-            Debug.LogWarning("DEBUG: Triggering simulated plank break");
-            isPlanking = false;
-            plankStatusText.text = "Plank Broken (Debug)";
-            HandlePlankBreak();
-            OnPlankBroken?.Invoke();
+            Debug.DrawRay(headset.transform.position, Vector3.down * 10, Color.red);
+            currentHeight = hit.distance;
+        }
+        else
+        {
+            // If the raycast doesn't hit the ground, log an error
+            Debug.LogError("Raycast did not hit the ground.");
         }
     }
 
+        private void HandleImmediateBreak()
+    {
+        Debug.Log("PlankDetector: Instant plank break triggered.");
+
+        isPlanking = false;
+        plankBreakInitiated = false;
+        float t = 1.5f;
+        StopBreakCountdownEffects(t);
+        HandlePlankBreak();
+
+        Debug.LogWarning("GAME ENDED, GOING TO NEXT SCENE");
+        // end game
+        //if (gameEndHandler.IsCatOnPlank())
+        //    gameEndHandler.MakeCatFall();
+        //else
+        //    gameEndHandler.FadeToWhiteAndEnd();
+
+        OnPlankBroken?.Invoke();
+    }
+
+    private void HandleCountdownBreak()
+    {
+        Debug.Log("PlankDetector: Plank broke after countdown.");
+
+        isPlanking = false;
+        plankBreakInitiated = false;
+        plankBreakTimer = 0f;
+
+        HandlePlankBreak();
+
+        //if (gameEndHandler.IsCatOnPlank())
+        //    gameEndHandler.MakeCatFall();
+        //else
+        //    gameEndHandler.FadeToWhiteAndEnd();
+
+        OnPlankBroken?.Invoke();
+    }
+
+    //private void StartBreakCountdownEffects()
+    //{
+    //    if (postProcessingEffects != null)
+    //    {
+    //        postProcessingEffects.SetActive(true);
+    //    }
+
+    //    if (heartbeatAudio != null)
+    //    {
+    //        heartbeatAudio.Play();
+    //    }
+    //}
+
+    private void UpdateBreakCountdownEffects(float t)
+    {
+            t = Mathf.Clamp01(t);
+            postFXController?.UpdateEffectProgress(t);
+            heartbeatAudio.volume = Mathf.Lerp(0f, 1f, t);
+    }
+
+    private IEnumerator LerpResetEffects(float duration)
+    {
+        float time = 0f;
+
+        // Assume postFXController keeps track of current effect strength internally
+        float startVolume = heartbeatAudio.volume;
+        float startPostProgress = postFXController.CurrentProgress;
+
+        while (time < duration)
+        {
+            float lerpT = time / duration;
+
+            heartbeatAudio.volume = Mathf.Lerp(startVolume, 0f, lerpT);
+            postFXController?.UpdateEffectProgress(Mathf.Lerp(startPostProgress, 0f, lerpT));
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        // Finalize
+        heartbeatAudio.volume = 0f;
+        postFXController?.ResetEffects();
+    }
+    private void StopBreakCountdownEffects(float t)
+    {
+        StopCoroutine(LerpResetEffects(1f));
+
+        StartCoroutine(LerpResetEffects(t / 2f));
+        //postFXController?.ResetEffects();
+        //plankBreakTimer += Time.deltaTime;
+        //float tr = 1f;
+
+        //postFXController?.ResetEffects(tr);
+        //heartbeatAudio.volume = Mathf.Lerp(0f, 1f, tr); // Optional
+    }
     public void StartPlankMonitoring()
     {
         if (!calibrationLoaded)

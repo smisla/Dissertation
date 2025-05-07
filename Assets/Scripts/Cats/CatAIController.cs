@@ -440,7 +440,7 @@ public class CatAIController : MonoBehaviour
     {
         while (true)
         {
-            Debug.Log($"{gameObject.name} starting to look at player.");
+            //Debug.Log($"{gameObject.name} starting to look at player.");
             if (playerTransform == null) yield break;
 
             Vector3 lookDir = playerTransform.position - transform.position;

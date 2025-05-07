@@ -106,13 +106,15 @@ public class CalibrationManager : MonoBehaviour
             Debug.Log($"Ray hit the ground at distance: {distanceToGround}");
             if (isCalibratingDown)
             {
-                minHeight = Mathf.Min(minHeight, distanceToGround);
+                minHeight = distanceToGround;
+                //minHeight = Mathf.Min(minHeight, distanceToGround);
                 Debug.Log($"New minHeight: {minHeight}");
 
             }
             else if (isCalibratingUp)
             {
-                maxHeight = Mathf.Max(maxHeight, distanceToGround);
+                maxHeight = distanceToGround;
+                //maxHeight = Mathf.Max(maxHeight, distanceToGround);
                 Debug.Log($"New maxHeight: {maxHeight}");
             }
             else
