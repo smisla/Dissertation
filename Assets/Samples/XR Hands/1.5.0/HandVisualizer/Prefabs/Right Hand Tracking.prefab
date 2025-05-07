@@ -73,6 +73,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 6c6e0a482b7512c4fb54dd3a1a2cf414, type: 2}
     - target: {fileID: 431247075847058747, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 431247075847058747, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 431247075847058747, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 431247075847058747, guid: 56186ccf27ad7864681108ed88349071, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.2
       objectReference: {fileID: 0}
@@ -104,9 +116,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.x
       value: -60
       objectReference: {fileID: 0}
+    - target: {fileID: 431247075847058747, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 56186ccf27ad7864681108ed88349071, type: 3}
       propertyPath: m_Name
       value: Right Hand Tracking
+      objectReference: {fileID: 0}
+    - target: {fileID: 2185512022143744475, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2185512022143744475, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2185512022143744475, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2185512022143744475, guid: 56186ccf27ad7864681108ed88349071, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

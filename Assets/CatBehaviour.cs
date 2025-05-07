@@ -212,7 +212,7 @@ public class CatBehaviour : MonoBehaviour
                 {
                     targetPosition = endPoint.position;
                 }
-                var newY = new Vector3(transform.position.x, 0.835f, transform.position.z);
+                var newY = new Vector3(transform.position.x, 0.5845f, transform.position.z);
                 transform.position = Vector3.MoveTowards(newY, targetPosition, speed * Time.deltaTime);
             }
 
@@ -296,7 +296,7 @@ public class CatBehaviour : MonoBehaviour
 
             speed = 0f;
 
-            transform.position = new Vector3(transform.position.x + 1.19f, 0.835f, transform.position.z);
+            transform.position = new Vector3(transform.position.x + 0.833f, 0.5845f, transform.position.z);
             yield return new WaitForSeconds(0.2f);
 
             if (saveSpeed > 1.5f)

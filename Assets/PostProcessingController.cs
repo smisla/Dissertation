@@ -59,23 +59,6 @@ public class PostProcessingController : MonoBehaviour
         UpdateEffectProgress(0f);
     }
 
-    public void ApplyHandWarningEffect(float t)
-    {
-        if (colorAdjustments != null)
-            colorAdjustments.colorFilter.value = Color.Lerp(Color.white, warningColor, t);
-
-        if (chroma != null)
-            chroma.intensity.value = Mathf.Lerp(0f, 0.2f, t);
-    }
-
-    public void ClearHandWarningEffect(float t)
-    {
-        if (colorAdjustments != null)
-            colorAdjustments.colorFilter.value = Color.Lerp(warningColor, Color.white, t);
-
-        if (chroma != null)
-            chroma.intensity.value = Mathf.Lerp(0.2f, 0f, t);
-    }
 
     //public void ResetEffects(float tr)
     //{

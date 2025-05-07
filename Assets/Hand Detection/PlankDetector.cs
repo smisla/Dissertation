@@ -6,17 +6,21 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using TMPro;
 using Unity.XR.CoreUtils;
+using TMPro.Examples;
 
 public class PlankDetector : MonoBehaviour
 {
     [Header("References")]
     public Transform headset;
+    public Transform XROrigin;
     public HandGestureDetector gestureDetector;
     public TextMeshProUGUI plankStatusText;
     public TextMeshProUGUI detectorText;
     public CatSpawner catSpawner;
     public CountdownTimer countdown;
     public PostProcessingController postFXController;
+    public GameObject cameraOffset;
+    public float playerHeightOffset;
 
     [Header("Tuning")]
     public float heightTolerance = 0.5f;
@@ -35,17 +39,37 @@ public class PlankDetector : MonoBehaviour
     [Header("Height Logic")]
     private float minHeight;
     private float maxHeight;
-    private float currentHeight = float.PositiveInfinity;
+    public float currentHeight;
     public bool isPlanking = false;
     public bool calibrationLoaded = false;
+    public float adjustedHeight;
     public bool previousPlankState = true;
     private LayerMask groundLayer;
+    //public Vector3 fixedPos = new Vector3(0, 0, 0);
+    public bool lockRotation = true;
+    public bool gotHeight = false;
 
     private void Start() // Loads player boundaries
     {
+        
         LoadCalibration();
 
+        playerHeightOffset = PlayerPrefs.GetFloat("PlayerStandingHeight");
+
+        
         groundLayer = LayerMask.GetMask("Ground");
+    }
+
+    private void LateUpdate()
+    {
+        //if (!gotHeight)
+        //{
+        //    currentHeight = currentHeight + playerHeightOffset;
+        //    Debug.Log($"Height: {adjustedHeight}");
+        //    gotHeight = true;
+        //}
+
+        //XROrigin.transform.position = fixedPos;
     }
 
     private void Update() // if isPlanking and calibration loaded is true, run detection logic. Checks for plank break, handles plank break.
@@ -108,13 +132,11 @@ public class PlankDetector : MonoBehaviour
 
                 if (handsOpen)
                 {
-                    postFXController?.ApplyHandWarningEffect(Time.deltaTime * 5f);
                     plankStatusText?.SetText("Hands not supporting plank!");
                     //visual warning
                 }
                 else
                 {
-                    postFXController?.ClearHandWarningEffect(Time.deltaTime * 5f);
                     plankStatusText?.SetText("Planking...");
                 }
             }
@@ -154,7 +176,7 @@ public class PlankDetector : MonoBehaviour
 
         if (Physics.Raycast(headset.transform.position, Vector3.down, out hit, Mathf.Infinity, groundLayer))
         {
-            Debug.DrawRay(headset.transform.position, Vector3.down * 10, Color.red);
+            Debug.DrawRay(headset.transform.position, Vector3.down * 20, Color.red);
             currentHeight = hit.distance;
         }
         else
