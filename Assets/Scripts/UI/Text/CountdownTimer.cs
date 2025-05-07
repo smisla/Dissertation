@@ -29,7 +29,6 @@ public class CountdownTimer : MonoBehaviour
 
     IEnumerator StartCountdown()
     {
-        yield return new WaitForSeconds(5f);
         three.gameObject.SetActive(false);
         two.gameObject.SetActive(false);
         one.gameObject.SetActive(false);

@@ -92,7 +92,7 @@ public class PlankDetector : MonoBehaviour
         Debug.Log($"PlankDetector: Loaded calibration - Min: {minHeight}, Max: {maxHeight}");
     }
 
-    private void HandlePlankBreak()
+    public void HandlePlankBreak()
     {
         Debug.Log("PlankDetector: Handling plank break logic.");
 
@@ -137,6 +137,16 @@ public class PlankDetector : MonoBehaviour
 
         plankStatusText?.SetText($"Height: {currentHeight:F2}\nLeft: {left}, Right: {right}");
 
+        if ( handsOpen )
+        {
+            Debug.Log("PlankDetector: Plank Broken.");
+            plankStatusText?.SetText("Plank HANDS Broken.");
+
+            isPlanking = false;
+
+            HandlePlankBreak();
+            OnPlankBroken?.Invoke();
+        }
         if (heightBroken && handsOpen)
         {
             Debug.Log("PlankDetector: Plank Broken.");

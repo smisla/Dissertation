@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using OVR.OpenVR;
 
 public class CatBehaviour : MonoBehaviour
 {
@@ -36,6 +37,8 @@ public class CatBehaviour : MonoBehaviour
     public const float RUN_THRESHOLD = 2f;
     public List<string> shockedAnimations;
     private bool isClimbing = false;
+    private bool hasClimbed = false;
+    private bool hasClimbedDown = false;
 
     [Header("Climbing Settings")]
     public string climbUpTrigger = "ClimbUp";
@@ -47,9 +50,9 @@ public class CatBehaviour : MonoBehaviour
     public float jumpLandDuration = 0.67f;
     private float preClimbSpeed;
 
-    public float raycastHeight = 2f;     
+    public float raycastHeight = 2f;
     public float maxRayDistance = 5f;
-    public LayerMask groundLayer;   
+    public LayerMask groundLayer;
 
     [Header("Debug & State Flags")]
     public bool wasOffset;
@@ -89,10 +92,27 @@ public class CatBehaviour : MonoBehaviour
     private bool reachedMiddle = false;
     private bool isMoving = true;
     private bool gameStopped = false;
-    
+
 
     private Transform player;
     #endregion
+
+    #region Falling Cat
+    private bool isBetweenPoints = false;
+    private bool isPlankBroken = false;
+    private bool isFalling = false;
+    private bool hasStartedFall = false;
+    private bool hasFallen = false;
+    private bool gameOver = false;
+    private PlankDetector plankState;
+
+    private float fallSpeed = 0f;
+    private float gravity = 9.81f;
+    private float fallMultiplier = 1.5f;
+    private Vector3 randomRotationAxis;
+    private float rotationSpeed;
+    #endregion
+
 
     // ?????????????????????????????????????????????????????????????
     // Unity Methods
@@ -102,7 +122,6 @@ public class CatBehaviour : MonoBehaviour
 
     void Start()
     {
-
         groundLayer = LayerMask.GetMask("Ground");
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
@@ -119,14 +138,19 @@ public class CatBehaviour : MonoBehaviour
 
         AssignPersonality();
 
-        willPauseInMiddle = Random.value < pauseChance;
+        //willPauseInMiddle = Random.value < pauseChance;
 
-        targetPosition = climbPoint.position;
+        targetPosition = middlePoint.position;
         //targetPosition = willPauseInMiddle ? slowDownPoint.position : endPoint.position;
     }
 
     void Update()
     {
+        if (Input.GetKeyUp(KeyCode.B))
+        {
+            isPlankBroken = true;
+            Debug.Log("Hands Open");
+        }
         if (isClimbing) return;
 
         float targetSpeed = speed;
@@ -148,15 +172,55 @@ public class CatBehaviour : MonoBehaviour
         UpdateAnimSpeed();
 
 
+        if (isPlankBroken && !isFalling)
+        {
+            if (IsBetweenPoints())
+            {
+                StartCoroutine(FallIntoRavine());
+            }
+            else
+            {
+                Debug.Log("No cat between Points");
+                //plankState.HandlePlankBreak();
+            }
+        }
+        //else if (Vector3.Distance(transform.position, endPoint.position) < 4f)
+        //{
+        //    StopAtEndSmooth();
+        //    transform.position = endPoint.position;
+        //}
+
         if (!animator.GetBool("isWalking")) return;
 
-        if (!isClimbing && animator.GetBool("isWalking"))
+        if (!isClimbing && !isFalling && animator.GetBool("isWalking"))
         {
             float swayMultiplier = Mathf.Lerp(0f, 1f, Mathf.Clamp01(speed / 3f));
             float sway = Mathf.Sin(Time.time * 3f) * 0.15f * swayMultiplier;
             transform.position += transform.right * sway * Time.deltaTime;
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+            if (!hasClimbed)
+            {
+                var lockedY = new Vector3(transform.position.x, 0f, transform.position.z);
+                transform.position = Vector3.MoveTowards(lockedY, targetPosition, speed * Time.deltaTime);
+            }
+            else if (hasClimbed)
+            {
+                if (willPauseInMiddle)
+                {
+                    targetPosition = middlePoint.position;
+                }
+                else
+                {
+                    targetPosition = endPoint.position;
+                }
+                var newY = new Vector3(transform.position.x, 0.835f, transform.position.z);
+                transform.position = Vector3.MoveTowards(newY, targetPosition, speed * Time.deltaTime);
+            }
+
+
         }
+
+
+
 
         if (Vector3.Distance(transform.position, targetPosition) < stopThreshold)
         {
@@ -184,11 +248,7 @@ public class CatBehaviour : MonoBehaviour
                 //if ((targetPosition == slowDownPoint.position || (targetPosition == slowDownPoint.position - new Vector3(3f, 0.0f, 0.0f) && speed > 2.0f)) && !reachedMiddle)
 
             }
-            //else if (Vector3.Distance(transform.position, endPoint.position) < 4f)
-            //{
-            //    StopAtEndSmooth();
-            //    transform.position = endPoint.position;
-            //}
+
         }
     }
 
@@ -203,13 +263,15 @@ public class CatBehaviour : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (isClimbing) return;
+        //if (!hasClimbed) return;
 
-        if (other.CompareTag("CatClimbUp"))
+        if (other.CompareTag("CatClimbUp") && !hasClimbed)
         {
             Debug.Log("Climbing");
+            hasClimbed = true;
             StartCoroutine(ClimbRoutine(climbUpTrigger, other.transform.position));
         }
-        else if (other.CompareTag("CatClimbDown"))
+        else if (other.CompareTag("CatClimbDown") && !hasClimbedDown)
         {
             StartCoroutine(ClimbRoutine(jumpDownStartTrigger, other.transform.position));
         }
@@ -228,13 +290,16 @@ public class CatBehaviour : MonoBehaviour
         {
             animator.SetTrigger(jumpUpTrigger);
             animator.SetTrigger(climbUpTrigger);
-            yield return new WaitForSeconds(1.292f);
+            speed = 0f;
+            animator.SetFloat("WalkSpeed", speed);
+            animator.SetBool("isWalking", true);
+            yield return new WaitForSeconds(1.3073f);
 
             Debug.Log("time up");
 
             speed = 0f;
-            animator.SetFloat("WalkSpeed", speed);
-            transform.position = new Vector3(transform.position.x + 0.57f, 0.515f, transform.position.z);
+
+            transform.position = new Vector3(transform.position.x + 1.19f, 0.835f, transform.position.z);
             yield return new WaitForSeconds(0.2f);
 
             if (saveSpeed > 1.5f)
@@ -252,8 +317,8 @@ public class CatBehaviour : MonoBehaviour
 
             animator.applyRootMotion = false;
 
-            var tempPos = new Vector3(targetPosition.x + 0.57f, 0.515f, targetPosition.z);
-            transform.position = Vector3.MoveTowards(transform.position, tempPos, speed * Time.deltaTime);
+            //var tempPos = new Vector3(targetPosition.x + 3f, 10f, targetPosition.z);
+            //transform.position = Vector3.MoveTowards(transform.position, tempPos, speed * Time.deltaTime);
 
             isClimbing = false;
             yield return new WaitForSeconds(0.2f);
@@ -264,11 +329,14 @@ public class CatBehaviour : MonoBehaviour
             animator.SetTrigger(jumpDownStartTrigger);
             yield return new WaitForSeconds(jumpStartDuration);
 
+            //JumpForward(4f, 1f);
             if (agent != null) agent.enabled = true;
             animator.SetTrigger(jumpDownLandTrigger);
             yield return new WaitForSeconds(jumpLandDuration);
 
-            transform.position = new Vector3(transform.position.x, 0.083f, transform.position.z);
+            transform.position = new Vector3(transform.position.x, 0.08f, transform.position.z);
+            //transform.position = Vector3.MoveTowards(lockedY, targetPosition, speed * Time.deltaTime);
+            //transform.position = new Vector3(transform.position.x, 0.083f, transform.position.z);
             //var tempPosDown = new Vector3(targetPosition.x, 0.2f, targetPosition.z);
             //transform.position = Vector3.MoveTowards(transform.position, tempPosDown, speed * Time.deltaTime);
 
@@ -279,7 +347,22 @@ public class CatBehaviour : MonoBehaviour
             StopAtEnd();
         }
     }
+    IEnumerator JumpForward(float distance, float duration)
+    {
+        Vector3 startPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        float endXPos = (transform.position.x + distance);
+        Vector3 endPos = new Vector3(endXPos, transform.position.y, transform.position.z);
+        float elapsed = 0f;
 
+        while (elapsed < duration)
+        {
+            transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = endPos; // Ensure it ends exactly at the endPos
+    }
     void ResumeAfterMiddle()
     {
         StartCoroutine(SmoothSpeedChange(0f, preClimbSpeed, 1.2f)); //WAS ADDING IN START SPEED AS WELL AS TARGET SPEED
@@ -302,7 +385,7 @@ public class CatBehaviour : MonoBehaviour
 
         while (elapsed < duration)
         {
-            speed = Mathf.Lerp(speed, 0f, elapsed/duration);
+            speed = Mathf.Lerp(speed, 0f, elapsed / duration);
             animator.SetFloat("WalkSpeed", speed);
             UpdateAnimSpeed();
             elapsed += Time.deltaTime;
@@ -311,7 +394,7 @@ public class CatBehaviour : MonoBehaviour
 
         speed = 0f;
         animator.SetBool("isWalking", false);
-        if (shockedAnimations !=  null && shockedAnimations.Count > 0)
+        if (shockedAnimations != null && shockedAnimations.Count > 0)
         {
             string shockedTrigger = shockedAnimations[Random.Range(0, shockedAnimations.Count)];
             GetComponent<Animator>().SetTrigger(shockedTrigger);
@@ -454,7 +537,7 @@ public class CatBehaviour : MonoBehaviour
 
     void ResumeMovement(float delay = 2.5f)
     {
-        targetPosition = new Vector3 (endPoint.position.x, endPoint.position.y, endPoint.position.z);
+        targetPosition = new Vector3(endPoint.position.x, endPoint.position.y, endPoint.position.z);
         animator.SetBool("isWalking", true);
     }
 
@@ -482,15 +565,17 @@ public class CatBehaviour : MonoBehaviour
 
         if (agent != null)
         {
+            agent.updatePosition = true;
             agent.enabled = true;
             agent.Warp(transform.position);
         }
-        
+
         if (aiController != null) aiController.enabled = true;
 
         CatAIController catAI = GetComponent<CatAIController>();
         if (catAI != null)
         {
+            //catAI.Awake();
             catAI.EnableWandering();
         }
 
@@ -515,7 +600,7 @@ public class CatBehaviour : MonoBehaviour
             hasPausedOnBack = false;
             animator.SetBool("isPaused", false);
             yield return new WaitForSeconds(delay);
-            StartCoroutine(SmoothSpeedChange(0f,saveSpeed, delaySpeed));
+            StartCoroutine(SmoothSpeedChange(0f, saveSpeed, delaySpeed));
             ResumeMovement();
         }
         else if (hasDoneAction)
@@ -535,7 +620,99 @@ public class CatBehaviour : MonoBehaviour
         isMoving = true;
     }
 
-    #endregion
+    bool IsBetweenPoints()
+    {
+        float x = transform.position.x;
+        return x >= slowDownPoint.position.x && x <= middlePoint.position.x;
+    }
+
+    IEnumerator FallIntoRavine()
+    {
+        
+        isFalling = true;
+
+        //float savedSpeed = speed;
+        //speed = 0f;
+        //animator.SetFloat("WalkSpeed", 0f);
+        //animator.SetBool("isWalking", false);
+
+        animator.applyRootMotion = false;
+        animator.SetTrigger("DieStart");
+        yield return new WaitForSeconds(0.2f);
+        animator.SetTrigger("Die");
+
+        float delayBeforeFallBlend = 0.45f;
+        float elapsed = 0f;
+
+        StartCoroutine(LerpZPosition(delayBeforeFallBlend, 0.45f));
+
+        //yield return new WaitForSeconds(delayBeforeFallBlend);
+
+        animator.SetTrigger("Fall");
+        
+
+        float endZ = 230f;
+        float rotateDuration = 4f;
+        float rotateTimer = 0f;
+
+        float fallSpeed = 0f;
+        float fallMultiplier = 1.5f;
+
+        while (true)
+        {
+            
+            if (rotateTimer < rotateDuration)
+            {
+                rotateTimer += Time.deltaTime;
+                float t = Mathf.Clamp01(rotateTimer / rotateDuration);
+                float z = Mathf.Lerp(0f, endZ, t);
+                float y = Mathf.Lerp(90f, 60f, t);
+
+                transform.rotation = Quaternion.Euler(transform.eulerAngles.x, y, z);
+            }
+
+            fallSpeed += gravity * fallMultiplier * Time.deltaTime;
+            transform.position += Vector3.down * fallSpeed * Time.deltaTime;
+
+            if (transform.position.y < -50f)
+            {
+                Destroy(gameObject);
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        IEnumerator LerpZPosition(float duration, float distance)
+        {
+            Vector3 startPos = transform.position;
+            Vector3 endPos = new Vector3(startPos.x, startPos.y, startPos.z + distance);
+
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                transform.position = Vector3.Lerp(startPos, endPos, t);
+                yield return null;
+            }
+
+            transform.position = endPos;
+        }
+
+        void StartAirFall()
+        {
+            animator.CrossFade("JumpAir_Low", 0.15f);
+        }
+        bool IsBetweenPoints()
+        {
+            float x = transform.position.x;
+            return x >= slowDownPoint.position.x && x <= middlePoint.position.x;
+        }
+
+        #endregion
+    }
 }
 
 #endregion

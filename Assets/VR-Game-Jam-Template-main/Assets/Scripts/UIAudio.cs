@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class UIAudio : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
@@ -8,6 +9,7 @@ public class UIAudio : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     public string clickAudioName;
     public string hoverEnterAudioName;
     public string hoverExitAudioName;
+ 
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -15,10 +17,12 @@ public class UIAudio : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         {
             AudioManager.instance.Play(clickAudioName);
         }
+        
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+
         if (hoverEnterAudioName != "")
         {
             AudioManager.instance.Play(hoverEnterAudioName);

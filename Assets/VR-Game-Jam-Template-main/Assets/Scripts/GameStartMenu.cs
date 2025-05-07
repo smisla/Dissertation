@@ -16,6 +16,9 @@ public class GameStartMenu : MonoBehaviour
     public Button optionButton;
     public Button aboutButton;
     public Button quitButton;
+    public Image startImage;
+    public Image startImageHover;
+    public Animator animator;
 
     public List<Button> returnButtons;
 

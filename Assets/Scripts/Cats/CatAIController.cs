@@ -57,6 +57,9 @@ public class CatAIController : MonoBehaviour
 
     private Transform player;
 
+    private bool firstTime = true;
+    private float firstDecision = 0.1f;
+
 
     public void Start()
     {
@@ -95,6 +98,12 @@ public class CatAIController : MonoBehaviour
 
 
         //StartCoroutine(MoveAwayFromPlayer());
+    }
+
+    public void Awake()
+    {
+        agent.updateRotation = false;
+        agent.updateUpAxis = false;
     }
     public void Update()
     {
@@ -219,7 +228,7 @@ public class CatAIController : MonoBehaviour
         if (!isWandering)
         {
             isWandering = true;
-            state = CatBehaviourState.Wander;
+            //state = CatBehaviourState.Wander;
             StartCoroutine(BehaviourLoop());
         }
     }
@@ -233,6 +242,11 @@ public class CatAIController : MonoBehaviour
     //}
     IEnumerator BehaviourLoop()
     {
+        if (firstTime)
+        {
+            yield return new WaitForSeconds(firstDecision);
+            ChooseNewBehaviour();
+        }
         while (true)
         {
             yield return new WaitForSeconds(decisionInterval);
@@ -244,6 +258,11 @@ public class CatAIController : MonoBehaviour
 
     void ChooseNewBehaviour()
     {
+        if (firstTime)
+        {
+            currentState = CatBehaviourState.Wander;
+            firstTime = false;
+        }
         if (agent == null)
         {
             Debug.LogError("NavMeshAgent is NULL");
@@ -271,6 +290,10 @@ public class CatAIController : MonoBehaviour
                     targetAnimSpeed = newSpeed;
                     //currentAnimSpeed = 0f;
                     rampingUp = true;
+                    if (!agent.hasPath && !agent.pathPending)
+                    {
+                        ChooseNewBehaviour();
+                    }
                 }
                 break;
         }
