@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -20,6 +21,7 @@ public class GameStartMenu : MonoBehaviour
     public Image startImageHover;
     public Animator animator;
 
+    public UnityEvent SwitchScene;
     public List<Button> returnButtons;
 
     public Camera playerCamera;
@@ -53,6 +55,7 @@ public class GameStartMenu : MonoBehaviour
     public void StartGame()
     {
         HideAll();
+        SwitchScene?.Invoke();
         SceneTransitionManager.singleton.GoToSceneAsync(1);
     }
 

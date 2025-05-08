@@ -44,7 +44,7 @@ public class CatSpawner : MonoBehaviour
     {
 
         //StartCoroutine(SpawnCats());
-
+        totalCatsReached = 0;
         if (!isSpawning)
         {
             plankDetector.StartPlankMonitoring();
@@ -112,6 +112,8 @@ public class CatSpawner : MonoBehaviour
     {
         Debug.Log("StopSpawning() called.");
         isGameRunning = false;
+
+        PlayerPrefs.SetInt("TotalCatsSaved", totalCatsReached);
 
         //foreach (GameObject cat in activeCats)
         //{

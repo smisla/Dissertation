@@ -17,6 +17,8 @@ public class PlankDetector : MonoBehaviour
     public TextMeshProUGUI plankStatusText;
     public TextMeshProUGUI detectorText;
     public CatSpawner catSpawner;
+    public CatAIController cat;
+    public Animator animator;
     public CountdownTimer countdown;
     public PostProcessingController postFXController;
     public GameObject cameraOffset;
@@ -51,7 +53,8 @@ public class PlankDetector : MonoBehaviour
 
     private void Start() // Loads player boundaries
     {
-        
+        //cat = GetComponent<CatAIController>();
+        animator = GetComponent<Animator>();
         LoadCalibration();
 
         playerHeightOffset = PlayerPrefs.GetFloat("PlayerStandingHeight");
@@ -81,9 +84,20 @@ public class PlankDetector : MonoBehaviour
 
         bool heightBroken = currentHeight < (minHeight - heightTolerance) || currentHeight > (maxHeight + heightTolerance);
         bool handsOpen = left == "Open" && right == "Open";
+        bool handsThumbs = left == "Thumb" || right == "Thumb";
 
+        bool handsPoint = left == "Point" || right == "Point";
         detectorText?.SetText($"MinHeight: {minHeight}, MaxHeight: {maxHeight}, Height: {currentHeight:F2}\nLeft: {left}, Right: {right}");
 
+        //if (handsPoint)
+        //{
+        //    animator.SetTrigger("Turn");
+        //}
+
+        //if (handsThumbs)
+        //{
+        //    animator.SetTrigger("Jump");
+        //}
         if (!isPlanking || !calibrationLoaded) return;
 
         if (countdown.countdownComplete)

@@ -1,23 +1,20 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections;
-public class Timer : MonoBehaviour
-{
-    [SerializeField] private TextMeshProUGUI timerText;
-    float elapsedTime;
 
+public class Fadeeee : MonoBehaviour
+{
     public Image fadeImage;
+    public AudioSource audio;
     public float fadeDuration = 2f;
     public string gameOverSceneName = "Ending";
     private bool hasFaded = false;
 
-  
-
     private void Start()
     {
-        SetAlpha(1f);
+        SetAlpha(0f);
+        
     }
 
 
@@ -32,18 +29,26 @@ public class Timer : MonoBehaviour
 
     IEnumerator FadeOutAndLoad()
     {
+        audio.Stop();
         float timer = 0f;
         while (timer < fadeDuration)
         {
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+            float alpha = Mathf.Lerp(0f, 1f, timer / fadeDuration);
             SetAlpha(alpha);
             timer += Time.deltaTime;
             yield return null;
         }
 
-        SetAlpha(0f); // ensure full white
+        SetAlpha(1f); // ensure full white
         yield return new WaitForSeconds(0.2f); // tiny buffer
-        //SceneManager.LoadScene(gameOverSceneName);
+        SceneManager.LoadScene(gameOverSceneName);
+        while (audio.volume > 0f)
+        {
+            print("Volume if statement found");
+            audio.volume = Mathf.Lerp(audio.volume, 0f, 1f * Time.deltaTime);
+            yield return 0f;
+        }
+        audio.Stop();
     }
 
     private void SetAlpha(float alpha)
@@ -54,20 +59,5 @@ public class Timer : MonoBehaviour
             c.a = alpha;
             fadeImage.color = c;
         }
-    }
-
-
-
-    void Update()
-    {
-        StartTime();
-    }
-
-    public void StartTime()
-    {
-        elapsedTime += Time.deltaTime;
-        int minutes = Mathf.FloorToInt(elapsedTime / 60);
-        int seconds = Mathf.FloorToInt(elapsedTime % 60);
-        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 }

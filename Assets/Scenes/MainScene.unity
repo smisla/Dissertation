@@ -2620,11 +2620,13 @@ MonoBehaviour:
   plankStatusText: {fileID: 1448336632}
   detectorText: {fileID: 1363811523}
   catSpawner: {fileID: 949901709}
+  cat: {fileID: -2351608844895417115, guid: 5cd3a5a536a06bb43834116aff311d63, type: 3}
+  animator: {fileID: 2049919245}
   countdown: {fileID: 1469203536}
   postFXController: {fileID: 1925354969}
   cameraOffset: {fileID: 0}
   playerHeightOffset: 0
-  heightTolerance: 0.05
+  heightTolerance: 0.1
   OnPlankBroken:
     m_PersistentCalls:
       m_Calls:
@@ -3032,7 +3034,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &327297576
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6852,6 +6854,135 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -3302972225415322985, guid: 88e39d0fe5acd7046ace8b00b7a7a1b3, type: 3}
   m_PrefabInstance: {fileID: 1947163531}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &733200457
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 733200458}
+  - component: {fileID: 733200459}
+  m_Layer: 0
+  m_Name: Meowwwwww
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &733200458
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733200457}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1164430262}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &733200459
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733200457}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 40075188aaa075240a8ae0edc69a6935, type: 3}
+  m_Resource: {fileID: 8300000, guid: 40075188aaa075240a8ae0edc69a6935, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.357
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &747408722 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2838391200542782613, guid: 88e39d0fe5acd7046ace8b00b7a7a1b3, type: 3}
@@ -8506,7 +8637,7 @@ GameObject:
   - component: {fileID: 940081563}
   m_Layer: 6
   m_Name: Ravine
-  m_TagString: Untagged
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8846,7 +8977,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &956811086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15535,6 +15666,7 @@ Transform:
   - {fileID: 636179508}
   - {fileID: 1193522504}
   - {fileID: 316310693}
+  - {fileID: 733200458}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1165841645 stripped
@@ -16311,6 +16443,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timerText: {fileID: 1730386808}
+  fadeImage: {fileID: 168575444}
+  fadeDuration: 2
+  gameOverSceneName: Ending
 --- !u!1 &1326562133
 GameObject:
   m_ObjectHideFlags: 0
@@ -17103,7 +17238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1448336631
 RectTransform:
   m_ObjectHideFlags: 0
@@ -17373,10 +17508,10 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1469203535}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.53697914, y: 0.53697914, z: 0.53697914}
-  m_ConstrainProportionsScale: 0
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: -179.9}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1838615663}
   - {fileID: 1808424726}
@@ -17387,10 +17522,10 @@ RectTransform:
   - {fileID: 1471139722}
   - {fileID: 330127118}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 515.5, y: 232}
+  m_AnchoredPosition: {x: 3, y: 95.7}
   m_SizeDelta: {x: 4500, y: 864.09314}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1470205489
@@ -18487,6 +18622,62 @@ MonoBehaviour:
     onRecognised:
       m_PersistentCalls:
         m_Calls: []
+  - name: Thumbs
+    fingerData:
+    - {x: 0.09102362, y: -0.00953437, z: 0.1083258}
+    - {x: 0.027039804, y: -0.027527718, z: 0.069475025}
+    - {x: 0.013223456, y: -0.025708852, z: 0.062890224}
+    - {x: -0.0040515037, y: -0.025407385, z: 0.05450488}
+    - {x: -0.020162707, y: -0.028032279, z: 0.050741263}
+    - {x: 0.02008909, y: -0.04618482, z: 0.106688716}
+    - {x: 0.0016046632, y: -0.047229394, z: 0.10145356}
+    - {x: -0.014369237, y: -0.047151126, z: 0.091650315}
+    - {x: -0.027512677, y: -0.04488228, z: 0.08202737}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Thumbs
+    fingerData:
+    - {x: 0.089276105, y: -0.0060611577, z: 0.10941995}
+    - {x: 0.02658571, y: -0.02716407, z: 0.068312556}
+    - {x: 0.012910985, y: -0.02525707, z: 0.062481485}
+    - {x: -0.004360766, y: -0.024887158, z: 0.054100566}
+    - {x: -0.020348184, y: -0.027363839, z: 0.050077062}
+    - {x: 0.020326288, y: -0.046382003, z: 0.105649404}
+    - {x: 0.0017075388, y: -0.04724471, z: 0.10108768}
+    - {x: -0.014326486, y: -0.04714383, z: 0.09145232}
+    - {x: -0.027450887, y: -0.044873737, z: 0.08169281}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Point
+    fingerData:
+    - {x: -0.004076216, y: -0.06945649, z: 0.10033923}
+    - {x: 0.03307639, y: -0.009489349, z: 0.19007675}
+    - {x: 0.008505932, y: -0.050193895, z: 0.08515132}
+    - {x: -0.0023684697, y: -0.042512342, z: 0.06733411}
+    - {x: -0.0137559725, y: -0.039642137, z: 0.059207674}
+    - {x: 0.029613735, y: -0.008627387, z: 0.14111204}
+    - {x: -0.0024590273, y: -0.036218558, z: 0.13118121}
+    - {x: -0.01956634, y: -0.044183403, z: 0.11107169}
+    - {x: -0.03199078, y: -0.044463065, z: 0.09349384}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Finger
+    fingerData:
+    - {x: 0.011934366, y: -0.069552846, z: 0.09551935}
+    - {x: 0.02256527, y: -0.03540341, z: 0.06665443}
+    - {x: 0.00025134668, y: -0.09701516, z: 0.144861}
+    - {x: -0.0002379072, y: -0.037773747, z: 0.052946206}
+    - {x: -0.011329035, y: -0.04242993, z: 0.0495917}
+    - {x: 0.02236473, y: -0.048158403, z: 0.11126499}
+    - {x: 0.0013821383, y: -0.043669246, z: 0.12545523}
+    - {x: -0.016048502, y: -0.048957843, z: 0.10008651}
+    - {x: -0.029742045, y: -0.046799947, z: 0.08810634}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
   rightHandGesture:
   - name: Open
     fingerData:
@@ -18513,6 +18704,48 @@ MonoBehaviour:
     - {x: -0.00060792064, y: -0.046208277, z: 0.115041554}
     - {x: 0.016327467, y: -0.04721884, z: 0.10342598}
     - {x: 0.029539477, y: -0.04537413, z: 0.09001993}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Thumbs
+    fingerData:
+    - {x: -0.087343454, y: -0.0066257175, z: 0.1136837}
+    - {x: -0.02692729, y: -0.026474955, z: 0.07291265}
+    - {x: -0.01355224, y: -0.02532511, z: 0.06570797}
+    - {x: 0.0030706637, y: -0.025553834, z: 0.057322264}
+    - {x: 0.01986071, y: -0.02656892, z: 0.0534027}
+    - {x: -0.020468188, y: -0.046682794, z: 0.10952196}
+    - {x: -0.0012457456, y: -0.047858663, z: 0.10464737}
+    - {x: 0.01496495, y: -0.047909956, z: 0.09462322}
+    - {x: 0.0281794, y: -0.04560718, z: 0.08417337}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Point
+    fingerData:
+    - {x: 0.006481474, y: -0.06765898, z: 0.1058393}
+    - {x: -0.029811079, y: -0.005866133, z: 0.19025132}
+    - {x: -0.009599697, y: -0.034741133, z: 0.08164964}
+    - {x: 0.002595396, y: -0.03240074, z: 0.0636159}
+    - {x: 0.013995775, y: -0.03088418, z: 0.051792268}
+    - {x: -0.028155427, y: -0.007979586, z: 0.14126852}
+    - {x: 0.0022168113, y: -0.039536674, z: 0.12706657}
+    - {x: 0.017751057, y: -0.04648693, z: 0.10492957}
+    - {x: 0.028763583, y: -0.045718167, z: 0.0848477}
+    onRecognised:
+      m_PersistentCalls:
+        m_Calls: []
+  - name: Finger
+    fingerData:
+    - {x: -0.008315172, y: -0.06735749, z: 0.09751444}
+    - {x: -0.024458326, y: -0.035540447, z: 0.068292476}
+    - {x: 0.0043974575, y: -0.09300632, z: 0.15297945}
+    - {x: -0.0032979853, y: -0.041457437, z: 0.049974233}
+    - {x: 0.0076292194, y: -0.05145636, z: 0.046487737}
+    - {x: -0.021888837, y: -0.047971424, z: 0.112024695}
+    - {x: 0.00043404484, y: -0.043363046, z: 0.12590362}
+    - {x: 0.015529843, y: -0.04910885, z: 0.09701573}
+    - {x: 0.028687766, y: -0.04674148, z: 0.08426311}
     onRecognised:
       m_PersistentCalls:
         m_Calls: []
@@ -19112,7 +19345,7 @@ GameObject:
   - component: {fileID: 1691592887}
   m_Layer: 0
   m_Name: Environment
-  m_TagString: Untagged
+  m_TagString: Terrain
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -19227,7 +19460,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1730386807
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19254,7 +19487,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1730386806}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -21856,6 +22089,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   wasOffset: 0
+  meow: {fileID: 0}
   catDead: 0
 --- !u!114 &2049919235 stripped
 MonoBehaviour:
@@ -21868,6 +22102,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d5e9c4c9712984fbc4c64b6ccd411f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &2049919245 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2044542179573518896, guid: 5cd3a5a536a06bb43834116aff311d63, type: 3}
+  m_PrefabInstance: {fileID: 2049919224}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2064096366 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3696234139561092251, guid: f8f7a20b475883e4cbf1453615d66769, type: 3}

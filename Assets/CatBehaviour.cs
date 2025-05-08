@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using OVR.OpenVR;
+using UnityEngine.Audio;
 
 public class CatBehaviour : MonoBehaviour
 {
@@ -99,6 +100,8 @@ public class CatBehaviour : MonoBehaviour
 
     #region Falling Cat
     private bool isBetweenPoints = false;
+    private AudioSource meowwwwwwwwww;
+    public AudioClip meow;
     private bool isPlankBroken = false;
     private bool isFalling = false;
     private bool hasStartedFall = false;
@@ -123,6 +126,7 @@ public class CatBehaviour : MonoBehaviour
 
     void Start()
     {
+        meowwwwwwwwww = GetComponent<AudioSource>();
         groundLayer = LayerMask.GetMask("Ground");
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
@@ -631,6 +635,11 @@ public class CatBehaviour : MonoBehaviour
         isFalling = true;
         catDead = true;
 
+        meowwwwwwwwww.clip = meow;
+        meowwwwwwwwww.Play();
+
+
+        PlayerPrefs.SetInt("DeadCat", 1);
         //float savedSpeed = speed;
         //speed = 0f;
         //animator.SetFloat("WalkSpeed", 0f);

@@ -17,6 +17,7 @@ public struct Gesture
 
 public class HandGestureDetector : MonoBehaviour
 {
+
     // Provides access to the hand tracking system
     public TextMeshProUGUI gestureText;
 

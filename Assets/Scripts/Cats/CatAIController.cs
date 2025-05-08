@@ -8,10 +8,10 @@ using TMPro.Examples;
 public class CatAIController : MonoBehaviour
 {
     #region Enums
-    public enum CatBehaviourState { Wander, Idle, Sleep } //Walk, Run, Sleep, ClimbTree, PlayWithOtherCat, Hunt, SitAndLookAround, Drink, PawFace } // Add others when looking at animations
+    public enum CatBehaviourState { Wander, Idle } //Walk, Run, Sleep, ClimbTree, PlayWithOtherCat, Hunt, SitAndLookAround, Drink, PawFace } // Add others when looking at animations
     #endregion
 
-    private Animator animator;
+    public Animator animator;
     private NavMeshAgent agent;
     public CatBehaviourState state;
     public float decisionInterval = 0.5f;
@@ -336,10 +336,10 @@ public class CatAIController : MonoBehaviour
                     }
                 }
                 break;
-            case CatBehaviourState.Sleep:
-                sleepTrig = sleep[Random.Range(0, sleep.Length)];
-                StartCoroutine(SleepRoutine(sleepTrig));
-                break;
+            //case CatBehaviourState.Sleep:
+            //    sleepTrig = sleep[Random.Range(0, sleep.Length)];
+            //    StartCoroutine(SleepRoutine(sleepTrig));
+            //    break;
         }
 
         state = currentState;
@@ -392,6 +392,8 @@ public class CatAIController : MonoBehaviour
 
     IEnumerator SleepRoutine(string sleepTrig)
     {
+        agent.isStopped = true;
+        agent.speed = 0;
         animator.SetTrigger(sleepTrig); 
         animator.SetBool("isSleeping", true);
 
