@@ -16,6 +16,7 @@ public class CatSpawner : MonoBehaviour
     public Transform middlePoint;
     public Transform endPoint;
     public Transform destination;
+    public CatAudioController controller;
 
     public PlankDetector plankDetector;
 
@@ -28,7 +29,7 @@ public class CatSpawner : MonoBehaviour
     public TextMeshProUGUI catCounterText;
 
     private List<GameObject> activeCats = new List<GameObject>();
-    private int totalCatsReached = 0;
+    public int totalCatsReached = 0;
 
 
     public float spawnInterval = 5f;
@@ -160,6 +161,12 @@ public class CatSpawner : MonoBehaviour
     {
         GameObject newCat = Instantiate(catPrefab, startPoint.position, Quaternion.LookRotation(endPoint.position - startPoint.position));
         newCat.GetComponent<CatAIController>().playerTransform = playerTransform;
+
+        CatAudioController controller = newCat.GetComponent<CatAudioController>();
+        if (controller != null)
+        {
+            controller.StartRandomMeow();
+        }
 
         NavMeshAgent newAgent = newCat.GetComponent<NavMeshAgent>();
         CatBehaviour catScript = newCat.GetComponent<CatBehaviour>();

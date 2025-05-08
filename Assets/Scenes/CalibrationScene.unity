@@ -1340,8 +1340,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Please get into a plank position.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8c00c7ccc40adc844916f05267a65330, type: 2}
+  m_sharedMaterial: {fileID: -6283197285332556336, guid: 8c00c7ccc40adc844916f05267a65330, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

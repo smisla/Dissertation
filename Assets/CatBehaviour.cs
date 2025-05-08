@@ -105,6 +105,7 @@ public class CatBehaviour : MonoBehaviour
     private bool hasFallen = false;
     private bool gameOver = false;
     private PlankDetector plankState;
+    public bool catDead = false;
 
     private float fallSpeed = 0f;
     private float gravity = 9.81f;
@@ -292,7 +293,7 @@ public class CatBehaviour : MonoBehaviour
             speed = 0f;
             animator.SetFloat("WalkSpeed", speed);
             animator.SetBool("isWalking", true);
-            yield return new WaitForSeconds(1.3073f);
+            yield return new WaitForSeconds(1.30745f);
 
             speed = 0f;
 
@@ -369,6 +370,7 @@ public class CatBehaviour : MonoBehaviour
     {
         if (gameStopped) return;
         gameStopped = true;
+        isPlankBroken = true;
 
         StopAllCoroutines();
         StartCoroutine(SlowDownAndStop());
@@ -627,6 +629,7 @@ public class CatBehaviour : MonoBehaviour
     {
         
         isFalling = true;
+        catDead = true;
 
         //float savedSpeed = speed;
         //speed = 0f;

@@ -9,7 +9,7 @@ using sc.terrain.proceduralpainter;
 public class CalibrationManager : MonoBehaviour
 {
     public TextMeshProUGUI calibrationText;
-    public float countdownTime = 5f;
+    public float countdownTime = 3f;
 
     private XRNode inputSource = XRNode.Head;
     public float minHeight = float.PositiveInfinity;
@@ -51,7 +51,7 @@ public class CalibrationManager : MonoBehaviour
 
     private void Update()
     {
-        detectorText?.SetText($"MinHeight: {minHeight}, MaxHeight: {maxHeight}, Height: {playerHeight:F2}");
+        //detectorText?.SetText($"MinHeight: {minHeight}, MaxHeight: {maxHeight}, Height: {playerHeight:F2}");
         if (!heightCaptured)
         {
             timer += Time.deltaTime;
@@ -78,23 +78,24 @@ public class CalibrationManager : MonoBehaviour
     }
     private void StartCalibration()
     {
-        calibrationText.text = "Get into plank position and look down.";
+        calibrationText.text = "STAND UP";
         StartCoroutine(CountdownDown());
     }
 
     private IEnumerator CountdownDown()
     {
+        calibrationText.text = "PERFECT";
+        yield return new WaitForSeconds(1.5f);
+        calibrationText.text = "PLANK POSITION";
         yield return new WaitForSeconds(5f);
         isCalibratingDown = true;
         float timer = countdownTime;
         while (timer > 0f)
         {
-            calibrationText.text = $"Looking down... {timer: 0} seconds left.";
+            calibrationText.text = $"LOOK DOWN: {timer: 0} REMAINING";
             timer -= Time.deltaTime;
             yield return null;
         }
-
-        calibrationText.text = "Looking up... please tilt your head back.";
         StartCoroutine(CountdownUp());
     }
 
@@ -102,17 +103,17 @@ public class CalibrationManager : MonoBehaviour
     private IEnumerator CountdownUp()
     {
         isCalibratingDown = false;
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(3f);
         isCalibratingUp = true;
         float timer = countdownTime;
         while (timer > 0f)
         {
-            calibrationText.text = $"Looking up... {timer:0} seconds left";
+            calibrationText.text = $"LOOK UP: {timer:0} REMAINING";
             timer -= Time.deltaTime;
             yield return null;
         }
 
-        calibrationText.text = "Calibration complete!";
+        calibrationText.text = "CALIBRATION COMPLETE";
         if (minHeight != float.PositiveInfinity || maxHeight != float.NegativeInfinity)
         {
             EndCalibration();

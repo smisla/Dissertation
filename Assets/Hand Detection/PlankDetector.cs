@@ -189,11 +189,10 @@ public class PlankDetector : MonoBehaviour
         private void HandleImmediateBreak()
     {
         Debug.Log("PlankDetector: Instant plank break triggered.");
-
         isPlanking = false;
         plankBreakInitiated = false;
-        float t = 1.5f;
-        StopBreakCountdownEffects(t);
+        //float t = 1.5f;
+        //StopBreakCountdownEffects(t);
         HandlePlankBreak();
 
         Debug.LogWarning("GAME ENDED, GOING TO NEXT SCENE");
@@ -324,6 +323,7 @@ public class PlankDetector : MonoBehaviour
             }
             catSpawner.StopSpawning();
         }
+       OnPlankBroken?.Invoke(); 
     }
 
     private bool IsPlankBroken()

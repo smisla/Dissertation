@@ -2,12 +2,13 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro.Examples;
 
 //[RequireComponent(typeof(NavMeshAgent), typeof(Animator), typeof(Collider), typeof(Rigidbody))]
 public class CatAIController : MonoBehaviour
 {
     #region Enums
-    public enum CatBehaviourState { Wander, Idle } //Walk, Run, Sleep, ClimbTree, PlayWithOtherCat, Hunt, SitAndLookAround, Drink, PawFace } // Add others when looking at animations
+    public enum CatBehaviourState { Wander, Idle, Sleep } //Walk, Run, Sleep, ClimbTree, PlayWithOtherCat, Hunt, SitAndLookAround, Drink, PawFace } // Add others when looking at animations
     #endregion
 
     private Animator animator;
@@ -38,6 +39,9 @@ public class CatAIController : MonoBehaviour
     public float slowDownTime = 1.5f;
     public float lookAtSpeed = 5f;
     private bool gameStopped = false;
+    private string sleepTrig;
+
+    string[] sleep = new string[] { "Sleep", "Sleep2", "Sleep3" };
 
     private CatBehaviour catBehaviour;
 
@@ -57,6 +61,8 @@ public class CatAIController : MonoBehaviour
 
     private Transform player;
 
+    public float fixedOffset = -0.3f;
+
     private bool firstTime = true;
     private float firstDecision = 0.1f;
 
@@ -68,11 +74,9 @@ public class CatAIController : MonoBehaviour
 
         //    float animSpeedValue = Mathf.Clamp(velocityMag / baseSpeed, 0.5f, 2f);
         //    animator.SetFloat("AnimSpeed", animSpeedValue);")
-
         animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
         catBehaviour = GetComponent<CatBehaviour>();
-
         //head = transform.Find("Arm_Cat/root_bone/Spine_base/spine_02/spine_03/spine_04/spine_05/neck/head");
         //neck = transform.Find("Arm_Cat/root_bone/Spine_base/spine_02/spine_03/spine_04/spine_05/neck");
 
@@ -86,6 +90,7 @@ public class CatAIController : MonoBehaviour
         agent.isStopped = true;
         agent.speed = 0;
 
+        agent.baseOffset = fixedOffset;
         if (playerTransform == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -100,11 +105,11 @@ public class CatAIController : MonoBehaviour
         //StartCoroutine(MoveAwayFromPlayer());
     }
 
-    public void Awake()
-    {
-        agent.updateRotation = false;
-        agent.updateUpAxis = false;
-    }
+    //public void Awake()
+    //{
+    //    agent.updateRotation = false;
+    //    agent.updateUpAxis = false;
+    //}
     public void Update()
     {
         if (agent == null || animator == null || !agent.enabled) return;
@@ -131,6 +136,10 @@ public class CatAIController : MonoBehaviour
         animator.SetFloat("WalkSpeed", animSpeed);
         animator.SetFloat("AnimSpeed", Mathf.Clamp((animSpeed / Mathf.Max(agent.speed, 0.01f)) * 0.9f, 0.5f, 2f));
 
+        if (agent.baseOffset != fixedOffset)
+        {
+            agent.baseOffset = fixedOffset;
+        }
 
         // TURNING 
         Vector3 desiredDirection = agent.desiredVelocity.normalized;
@@ -225,12 +234,11 @@ public class CatAIController : MonoBehaviour
     public void EnableWandering()
     {
         if (catBehaviour != null) catBehaviour.enabled = false;
-        if (!isWandering)
-        {
-            isWandering = true;
-            //state = CatBehaviourState.Wander;
-            StartCoroutine(BehaviourLoop());
-        }
+        isWandering = true;
+        firstTime = true;
+        StartCoroutine(StartWanderingAfterAgentReady());
+        //state = CatBehaviourState.Wander;
+        //StartCoroutine(BehaviourLoop());
     }
 
     //IEnumerator MoveAwayFromPlayer()
@@ -240,13 +248,40 @@ public class CatAIController : MonoBehaviour
     //    yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance < 0.5f);
     //    StartCoroutine(BehaviourLoop());
     //}
+    IEnumerator StartWanderingAfterAgentReady()
+    {
+        // Wait until the NavMeshAgent is initialized and enabled
+        while (agent == null || !agent.isOnNavMesh)
+        {
+            yield return null; // Wait for a frame
+        }
+
+        StartCoroutine(InitialWanderAndLoop());
+    }
+
+    IEnumerator InitialWanderAndLoop()
+    {
+        currentState = CatBehaviourState.Wander;
+        firstTime = false;
+        Vector3 wanderPoint = GetWanderPoint();
+        if (wanderPoint != Vector3.zero)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(wanderPoint);
+            float newSpeed = Random.Range(0.5f, 2.5f);
+            agent.speed = newSpeed;
+
+            rampDistance = Mathf.Lerp(0.8f, 2f, Mathf.InverseLerp(0.5f, 2.5f, newSpeed));
+            startPos = transform.position;
+            targetAnimSpeed = newSpeed;
+            rampingUp = true;
+        }
+        yield return new WaitForSeconds(decisionInterval);
+        StartCoroutine(BehaviourLoop());
+    }
+
     IEnumerator BehaviourLoop()
     {
-        if (firstTime)
-        {
-            yield return new WaitForSeconds(firstDecision);
-            ChooseNewBehaviour();
-        }
         while (true)
         {
             yield return new WaitForSeconds(decisionInterval);
@@ -256,24 +291,29 @@ public class CatAIController : MonoBehaviour
         }
     }
 
+    IEnumerator Idle()
+    {
+        float idleDuration = Random.Range(5f, 15f);
+        yield return new WaitForSeconds(idleDuration);
+        ChooseNewBehaviour();
+    }
+
     void ChooseNewBehaviour()
     {
-        if (firstTime)
-        {
-            currentState = CatBehaviourState.Wander;
-            firstTime = false;
-        }
         if (agent == null)
         {
             Debug.LogError("NavMeshAgent is NULL");
             return;
         }
-        currentState = (CatBehaviourState)Random.Range(0, 1);
+
+        //currentState = forceWander ? CatBehaviourState.Wander : (CatBehaviourState)Random.Range(0, 3);
+        currentState = (CatBehaviourState)Random.Range(0, 3);
         switch (currentState)
         {
             case CatBehaviourState.Idle:
                 agent.isStopped = true;
                 agent.speed = 0;
+                Idle();
                 break;
             case CatBehaviourState.Wander:
                 Vector3 wanderPoint = GetWanderPoint();
@@ -295,6 +335,10 @@ public class CatAIController : MonoBehaviour
                         ChooseNewBehaviour();
                     }
                 }
+                break;
+            case CatBehaviourState.Sleep:
+                sleepTrig = sleep[Random.Range(0, sleep.Length)];
+                StartCoroutine(SleepRoutine(sleepTrig));
                 break;
         }
 
@@ -345,23 +389,24 @@ public class CatAIController : MonoBehaviour
         transform.position += transform.right * sway * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, agent.destination, agent.speed * Time.deltaTime);
     }
+
+    IEnumerator SleepRoutine(string sleepTrig)
+    {
+        animator.SetTrigger(sleepTrig); 
+        animator.SetBool("isSleeping", true);
+
+        float sleepDuration = Random.Range(5f, 15f);
+        yield return new WaitForSeconds(sleepDuration);
+
+        animator.SetBool("isSleeping", false); // Exit loop and transition to sleep end
+        float sleepEndDuration = animator.GetCurrentAnimatorStateInfo(0).length;
+        yield return new WaitForSeconds(sleepEndDuration);
+
+        // Resume other behavior (e.g., wander)
+        ChooseNewBehaviour();
+    }
     Vector3 GetWanderPoint()
     {
-        //Vector3 randomDir = Random.insideUnitSphere;
-        //randomDir.y = 0f;
-        //randomDir = randomDir.normalized;
-
-        //Vector3 forward = playerTransform.forward;
-        //float angle = Vector3.Angle(forward, randomDir);
-
-        //if (angle < forwardWanderAngle) return Vector3.zero;
-
-        //Vector3 target = playerTransform.position + randomDir * Random.Range(minDistanceFromPlayer, wanderRadius);
-        //if (NavMesh.SamplePosition(target, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-        //{
-        //    return hit.position;
-        //}
-        //return Vector3.zero;
         Vector3 randomDir = Random.insideUnitSphere;
         randomDir.y = 0f;
         randomDir = randomDir.normalized;

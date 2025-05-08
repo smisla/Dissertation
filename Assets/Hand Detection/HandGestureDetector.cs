@@ -141,6 +141,8 @@ public class HandGestureDetector : MonoBehaviour
             return;
         }
 
+        Quaternion wristRotation = wristPose.rotation;
+
         foreach (XRHandJointID jointID in new XRHandJointID[]
         {
             XRHandJointID.ThumbTip, XRHandJointID.IndexTip, XRHandJointID.MiddleTip,
@@ -152,9 +154,10 @@ public class HandGestureDetector : MonoBehaviour
             XRHandJoint joint = hand.GetJoint(jointID);
             if (joint.TryGetPose(out Pose pose))
             {
-                Vector3 relativePosition = pose.position - wristPose.position;
-                data.Add(relativePosition);
-                Debug.Log($"Saved {jointID} relative to wrist: {relativePosition}");
+                Vector3 worldRelative = pose.position - wristPose.position;
+                Vector3 localRelative = Quaternion.Inverse(wristRotation) * worldRelative;
+                data.Add(localRelative);
+                Debug.Log($"Saved {jointID} local to wrist: {localRelative}");
             }
         }
     }
@@ -191,8 +194,9 @@ public class HandGestureDetector : MonoBehaviour
             {
                 if (!hand.GetJoint(trackedJoints[i]).TryGetPose(out Pose pose)) { isDiscarded = true; break; }
 
-                Vector3 relativePosition = pose.position - wristPose.position;
-                float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
+                Vector3 worldRelative = pose.position - wristPose.position;
+                Vector3 localRelative = Quaternion.Inverse(wristPose.rotation) * worldRelative;
+                float distance = Vector3.Distance(localRelative, gesture.fingerData[i]);
 
                 if (distance > threshold)
                 {
@@ -211,81 +215,4 @@ public class HandGestureDetector : MonoBehaviour
         }
         return currentGesture;
     }
-
-        //XRHand leftHand = handSubsystem.leftHand;
-        //XRHand rightHand = handSubsystem.rightHand;
-
-        //XRHand hand = leftHand.isTracked ? leftHand : rightHand;
-
-        //if (hand == null || !hand.isTracked)
-        //{
-        //    Debug.LogWarning("No valid hand detected");
-        //    return currentGesture;
-        //}
-
-        //XRHandJoint wristJoint = hand.GetJoint(XRHandJointID.Wrist);
-        //Pose wristPose = new Pose();
-
-        //if (!wristJoint.TryGetPose(out wristPose))
-        //{
-        //    Debug.LogWarning("No wrist pose found! Skipping recognition.");
-        //    return currentGesture;
-        //}
-
-        //foreach (var gesture in leftHandGesture)
-        //{
-        //    if (gesture.fingerData.Count != 9)
-        //    {
-        //        Debug.LogWarning("Gesture data does not match expected joint count. Skipping gesture.");
-        //        continue;
-        //    }
-
-        //    float sumDistance = 0;
-        //    bool isDiscarded = false;
-
-        //    for (int i = 0; i < gesture.fingerData.Count; i++)
-        //    {
-        //        XRHandJointID[] trackedJoints =
-        //        {
-        //            XRHandJointID.ThumbTip, XRHandJointID.IndexTip, XRHandJointID.MiddleTip,
-        //            XRHandJointID.RingTip, XRHandJointID.LittleTip,
-        //            XRHandJointID.IndexIntermediate, XRHandJointID.MiddleIntermediate,
-        //            XRHandJointID.RingIntermediate, XRHandJointID.LittleIntermediate
-        //        };
-
-        //        XRHandJointID jointID = trackedJoints[i];
-        //        XRHandJoint joint = hand.GetJoint(jointID);
-
-        //        if (!joint.TryGetPose(out Pose fingerPose))
-        //        {
-        //            Debug.LogWarning($"Failed to get pose for joint {jointID}. Skipping this joint.");
-        //            isDiscarded = true;
-        //            break;
-        //        }
-        //        //float distance = Vector3.Distance(currentData, gesture.fingerDatas[i]);
-        //        if (joint.TryGetPose(out Pose pose))
-        //        {
-        //            Vector3 relativePosition = pose.position - wristPose.position;
-        //            float distance = Vector3.Distance(relativePosition, gesture.fingerData[i]);
-
-        //            Debug.Log($"Comparing {jointID} - Distance: {distance}");  // Debug log for gesture comparison
-
-
-        //            if (distance > threshold)
-        //            {
-        //                isDiscarded = true;
-        //                break;
-        //            }
-
-        //            sumDistance += distance;
-        //        }
-        //    }
-
-        //    if (!isDiscarded && sumDistance < currentMin)
-        //    {
-        //        currentMin = sumDistance;
-        //        currentGesture = gesture;
-        //    }
-        //}
-        //return currentGesture;
 }
